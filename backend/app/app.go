@@ -24,19 +24,18 @@ type App struct {
 	scheduler           *scheduler.Scheduler
 }
 
-func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderController *controllers.ReminderController) *App {
+func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderController *controllers.ReminderController, router *gin.Engine) *App {
 	schedulerInstance := scheduler.NewScheduler(db, riverClient)
 	return &App{
 		db:                 db,
 		river:              riverClient,
 		reminderController: reminderController,
+		router:             router,
 		scheduler:          schedulerInstance,
 	}
 }
 
 func (a *App) Run() error {
-	a.setupRoutes()
-
 	// Start scheduler in background
 	go a.scheduler.Start(context.Background())
 
@@ -49,29 +48,9 @@ func (a *App) Run() error {
 	return http.ListenAndServe(":"+port, a.router)
 }
 
-func (a *App) setupRoutes() {
-	a.router = gin.Default()
-
-	a.router.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	})
-
-	api := a.router.Group("/api")
-	{
-		api.GET("/reminders", a.GetReminders)
-		api.POST("/reminders", a.CreateReminder)
-		api.PUT("/reminders/:id", a.UpdateReminder)
-		api.DELETE("/reminders/:id", a.DeleteReminder)
-	}
+// SetController allows setting the controller for handler methods
+func (a *App) SetController(controller *controllers.ReminderController) {
+	a.reminderController = controller
 }
 
 // Handler methods

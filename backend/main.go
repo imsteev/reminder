@@ -10,6 +10,7 @@ import (
 	"reminder-app/controllers"
 	"reminder-app/jobs"
 
+	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -41,8 +42,11 @@ func main() {
 	// Initialize controller
 	reminderController := controllers.NewReminderController(db)
 
+	// Setup router
+	router := setupRoutes(reminderController)
+
 	// Create and run application
-	application := app.New(db, riverClient, reminderController)
+	application := app.New(db, riverClient, reminderController, router)
 	if err := application.Run(); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
@@ -85,5 +89,36 @@ func initRiver(db *pgxpool.Pool) (*river.Client[pgx.Tx], error) {
 	}
 
 	return riverClient, nil
+}
+
+func setupRoutes(reminderController *controllers.ReminderController) *gin.Engine {
+	router := gin.Default()
+
+	router.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
+	// Create app instance for handler methods
+	appInstance := &app.App{}
+	appInstance.SetController(reminderController)
+
+	api := router.Group("/api")
+	{
+		api.GET("/reminders", appInstance.GetReminders)
+		api.POST("/reminders", appInstance.CreateReminder)
+		api.PUT("/reminders/:id", appInstance.UpdateReminder)
+		api.DELETE("/reminders/:id", appInstance.DeleteReminder)
+	}
+
+	return router
 }
 

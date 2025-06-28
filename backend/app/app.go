@@ -2,9 +2,7 @@ package app
 
 import (
 	"context"
-	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"reminder-app/controllers"
@@ -33,21 +31,10 @@ func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderController
 }
 
 func (a *App) Run(addr string, handler http.Handler) error {
-	// Start scheduler in background
+	// Start scheduler in background -- should this live here?
 	go a.scheduler.Start(context.Background())
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	log.Printf("Server starting on port %s", port)
-	return http.ListenAndServe(":"+port, handler)
-}
-
-// SetController allows setting the controller for handler methods
-func (a *App) SetController(controller *controllers.ReminderController) {
-	a.reminderController = controller
+	return http.ListenAndServe(addr, handler)
 }
 
 // Handler methods

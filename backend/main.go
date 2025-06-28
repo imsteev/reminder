@@ -67,7 +67,12 @@ func main() {
 	api.PUT("/reminders/:id", app.UpdateReminder)
 	api.DELETE("/reminders/:id", app.DeleteReminder)
 
-	if err := app.Run(":8080", router); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	if err := app.Run(":"+port, router); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
 

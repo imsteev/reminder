@@ -59,7 +59,7 @@ func main() {
 	})
 
 	// Create and run application
-	app := app.New(db, riverClient, reminderController, router)
+	app := app.New(db, riverClient, reminderController)
 
 	api := router.Group("/api")
 	api.GET("/reminders", app.GetReminders)
@@ -67,7 +67,7 @@ func main() {
 	api.PUT("/reminders/:id", app.UpdateReminder)
 	api.DELETE("/reminders/:id", app.DeleteReminder)
 
-	if err := app.Run(); err != nil {
+	if err := app.Run(":8080", router); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
 

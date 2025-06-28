@@ -17,25 +17,22 @@ import (
 )
 
 type App struct {
-	db                  *pgxpool.Pool
-	river               *river.Client[pgx.Tx]
-	router              *gin.Engine
-	reminderController  *controllers.ReminderController
-	scheduler           *scheduler.Scheduler
+	db                 *pgxpool.Pool
+	river              *river.Client[pgx.Tx]
+	reminderController *controllers.ReminderController
+	scheduler          *scheduler.Scheduler
 }
 
-func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderController *controllers.ReminderController, router *gin.Engine) *App {
-	schedulerInstance := scheduler.NewScheduler(db, riverClient)
+func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderController *controllers.ReminderController) *App {
 	return &App{
 		db:                 db,
 		river:              riverClient,
 		reminderController: reminderController,
-		router:             router,
-		scheduler:          schedulerInstance,
+		scheduler:          scheduler.NewScheduler(db, riverClient),
 	}
 }
 
-func (a *App) Run() error {
+func (a *App) Run(addr string, handler http.Handler) error {
 	// Start scheduler in background
 	go a.scheduler.Start(context.Background())
 
@@ -45,7 +42,7 @@ func (a *App) Run() error {
 	}
 
 	log.Printf("Server starting on port %s", port)
-	return http.ListenAndServe(":"+port, a.router)
+	return http.ListenAndServe(":"+port, handler)
 }
 
 // SetController allows setting the controller for handler methods

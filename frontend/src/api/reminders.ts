@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { API_BASE_URL } from '../constants'
 
-const API_BASE_URL = 'http://localhost:8080/api'
+const API_URL = `${API_BASE_URL}/api`
 
 export interface Reminder {
   id: number
@@ -26,19 +27,19 @@ export interface CreateReminderRequest {
 }
 
 export const getReminders = async (userId: string): Promise<Reminder[]> => {
-  const response = await axios.get(`${API_BASE_URL}/reminders?user_id=${userId}`)
+  const response = await axios.get(`${API_URL}/reminders?user_id=${userId}`)
   return response.data
 }
 
 export const createReminder = async (reminder: CreateReminderRequest): Promise<Reminder> => {
-  const response = await axios.post(`${API_BASE_URL}/reminders`, reminder)
+  const response = await axios.post(`${API_URL}/reminders`, reminder)
   return response.data
 }
 
 export const updateReminder = async (id: number, reminder: Partial<Reminder>): Promise<void> => {
-  await axios.put(`${API_BASE_URL}/reminders/${id}`, reminder)
+  await axios.put(`${API_URL}/reminders/${id}`, reminder)
 }
 
 export const deleteReminder = async (id: number): Promise<void> => {
-  await axios.delete(`${API_BASE_URL}/reminders/${id}`)
+  await axios.delete(`${API_URL}/reminders/${id}`)
 }

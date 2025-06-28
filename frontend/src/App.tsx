@@ -3,11 +3,12 @@ import { useQuery } from '@tanstack/react-query'
 import { getReminders } from './api/reminders'
 import ReminderList from './components/ReminderList'
 import ReminderForm from './components/ReminderForm'
+import { DEFAULT_USER_ID } from './constants'
 
 function App() {
   const { data: reminders, isLoading, error, refetch } = useQuery({
     queryKey: ['reminders'],
-    queryFn: () => getReminders('default-user'),
+    queryFn: () => getReminders(DEFAULT_USER_ID),
   })
 
   return (

@@ -2,6 +2,18 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
 import { createReminder } from "../api/reminders";
+import {
+  getCurrentDateTimeString,
+  getDateTimeStringInMinutes,
+  getTomorrowDateTimeString,
+} from "../utils/datetime";
+import {
+  DEFAULT_USER_ID,
+  DEFAULT_START_DELAY_MINUTES,
+  TIME_PRESETS,
+  FORM_DEFAULTS,
+  UI_TEXT,
+} from "../constants";
 
 interface ReminderFormData {
   message: string;
@@ -33,45 +45,25 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
   });
 
   const setStartTimeToNow = () => {
-    const now = new Date();
-    const localDateTime = new Date(
-      now.getTime() - now.getTimezoneOffset() * 60000
-    )
-      .toISOString()
-      .slice(0, 16);
-    setValue("startTime", localDateTime);
+    setValue("startTime", getCurrentDateTimeString());
   };
 
   const setStartTimeIn = (minutes: number) => {
-    const futureTime = new Date(Date.now() + minutes * 60000);
-    const localDateTime = new Date(
-      futureTime.getTime() - futureTime.getTimezoneOffset() * 60000
-    )
-      .toISOString()
-      .slice(0, 16);
-    setValue("startTime", localDateTime);
+    setValue("startTime", getDateTimeStringInMinutes(minutes));
   };
 
   const setStartTimeTomorrow = (hour: number, minute = 0) => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(hour, minute, 0, 0);
-    const localDateTime = new Date(
-      tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000
-    )
-      .toISOString()
-      .slice(0, 16);
-    setValue("startTime", localDateTime);
+    setValue("startTime", getTomorrowDateTimeString(hour, minute));
   };
 
-  // Set default start time to 5 minutes from now
+  // Set default start time
   React.useEffect(() => {
-    setStartTimeIn(5);
+    setStartTimeIn(DEFAULT_START_DELAY_MINUTES);
   }, []);
 
   const onSubmit = (data: ReminderFormData) => {
     createMutation.mutate({
-      user_id: "default-user",
+      user_id: DEFAULT_USER_ID,
       message: data.message,
       phone_number: data.phoneNumber,
       frequency: data.frequency,
@@ -96,7 +88,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           id="message"
           {...register("message", { required: "Message is required" })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Take your medication"
+          placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
           rows={3}
         />
         {errors.message && (
@@ -116,7 +108,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           id="phoneNumber"
           {...register("phoneNumber", { required: "Phone number is required" })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="+1234567890"
+          placeholder={UI_TEXT.PHONE_PLACEHOLDER}
         />
         {errors.phoneNumber && (
           <p className="text-red-500 text-sm mt-1">
@@ -142,8 +134,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               valueAsNumber: true,
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="3"
-            min="1"
+            placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
+            min={FORM_DEFAULTS.MIN_FREQUENCY}
           />
           {errors.frequency && (
             <p className="text-red-500 text-sm mt-1">
@@ -168,8 +160,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               valueAsNumber: true,
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="8"
-            min="1"
+            placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
+            min={FORM_DEFAULTS.MIN_INTERVAL}
           />
           {errors.intervalHours && (
             <p className="text-red-500 text-sm mt-1">
@@ -184,12 +176,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           htmlFor="startTime"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          When should we start sending reminders?
+          {UI_TEXT.START_TIME_LABEL}
         </label>
         
         {/* Quick Time Buttons */}
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-2">Quick select:</p>
+          <p className="text-xs text-gray-500 mb-2">{UI_TEXT.QUICK_SELECT_LABEL}</p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -200,28 +192,28 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeIn(15)}
+              onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
               className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               In 15 min
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeIn(60)}
+              onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
               className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               In 1 hour
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeTomorrow(9)}
+              onClick={() => setStartTimeTomorrow(TIME_PRESETS.TOMORROW_9AM.hour, TIME_PRESETS.TOMORROW_9AM.minute)}
               className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               Tomorrow 9am
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeTomorrow(13)}
+              onClick={() => setStartTimeTomorrow(TIME_PRESETS.TOMORROW_1PM.hour, TIME_PRESETS.TOMORROW_1PM.minute)}
               className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               Tomorrow 1pm
@@ -231,7 +223,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
 
         {/* Custom Time Input */}
         <div>
-          <p className="text-xs text-gray-500 mb-2">Or pick a specific time:</p>
+          <p className="text-xs text-gray-500 mb-2">{UI_TEXT.CUSTOM_TIME_LABEL}</p>
           <input
             type="datetime-local"
             id="startTime"

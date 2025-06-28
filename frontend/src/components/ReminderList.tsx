@@ -1,17 +1,7 @@
 import React from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { deleteReminder } from '../api/reminders'
+import { deleteReminder, Reminder } from '../api/reminders'
 import { format } from 'date-fns'
-
-interface Reminder {
-  id: number
-  message: string
-  phone_number: string
-  frequency: number
-  interval_hours: number
-  start_time: string
-  is_active: boolean
-}
 
 interface ReminderListProps {
   reminders?: Reminder[]

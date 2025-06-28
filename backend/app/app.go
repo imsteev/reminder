@@ -2,22 +2,17 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 
-	"reminder-app/controllers"
 	"reminder-app/handlers"
-	"reminder-app/jobs"
 	"reminder-app/scheduler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
 
 type App struct {
@@ -25,32 +20,24 @@ type App struct {
 	river           *river.Client[pgx.Tx]
 	router          *gin.Engine
 	reminderHandler *handlers.ReminderHandler
+	scheduler       *scheduler.Scheduler
 }
 
-func New() *App {
-	return &App{}
+func New(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx], reminderHandler *handlers.ReminderHandler) *App {
+	schedulerInstance := scheduler.NewScheduler(db, riverClient)
+	return &App{
+		db:              db,
+		river:           riverClient,
+		reminderHandler: reminderHandler,
+		scheduler:       schedulerInstance,
+	}
 }
 
 func (a *App) Run() error {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found")
-	}
-
-	if err := a.initDB(); err != nil {
-		return fmt.Errorf("failed to initialize database: %w", err)
-	}
-
-	if err := a.initRiver(); err != nil {
-		return fmt.Errorf("failed to initialize River: %w", err)
-	}
-
-	a.initHandlers()
 	a.setupRoutes()
 
 	// Start scheduler in background
-	schedulerInstance := scheduler.NewScheduler(a.db, a.river)
-	go schedulerInstance.Start(context.Background())
+	go a.scheduler.Start(context.Background())
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -61,51 +48,6 @@ func (a *App) Run() error {
 	return http.ListenAndServe(":"+port, a.router)
 }
 
-func (a *App) initDB() error {
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://localhost/reminder_app?sslmode=disable"
-	}
-
-	var err error
-	a.db, err = pgxpool.New(context.Background(), dbURL)
-	if err != nil {
-		return fmt.Errorf("failed to create connection pool: %w", err)
-	}
-
-	if err := a.db.Ping(context.Background()); err != nil {
-		return fmt.Errorf("failed to ping database: %w", err)
-	}
-
-	return nil
-}
-
-func (a *App) initRiver() error {
-	workers := river.NewWorkers()
-	river.AddWorker(workers, &jobs.ReminderWorker{})
-
-	riverClient, err := river.NewClient(riverpgxv5.New(a.db), &river.Config{
-		Queues: map[string]river.QueueConfig{
-			river.QueueDefault: {MaxWorkers: 10},
-		},
-		Workers: workers,
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create river client: %w", err)
-	}
-
-	if err := riverClient.Start(context.Background()); err != nil {
-		return fmt.Errorf("failed to start river client: %w", err)
-	}
-
-	a.river = riverClient
-	return nil
-}
-
-func (a *App) initHandlers() {
-	reminderController := controllers.NewReminderController(a.db)
-	a.reminderHandler = handlers.NewReminderHandler(reminderController)
-}
 
 func (a *App) setupRoutes() {
 	a.router = gin.Default()

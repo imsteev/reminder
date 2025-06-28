@@ -14,16 +14,14 @@ import (
 )
 
 type Scheduler struct {
-	db                 *pgxpool.Pool
-	river              *river.Client[pgx.Tx]
-	reminderController *controllers.ReminderController
+	db    *pgxpool.Pool
+	river *river.Client[pgx.Tx]
 }
 
 func NewScheduler(db *pgxpool.Pool, riverClient *river.Client[pgx.Tx]) *Scheduler {
 	return &Scheduler{
-		db:                 db,
-		river:              riverClient,
-		reminderController: controllers.NewReminderController(db),
+		db:    db,
+		river: riverClient,
 	}
 }
 

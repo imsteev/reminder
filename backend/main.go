@@ -8,7 +8,6 @@ import (
 
 	"reminder-app/app"
 	"reminder-app/controllers"
-	"reminder-app/app/handlers"
 	"reminder-app/jobs"
 
 	"github.com/jackc/pgx/v5"
@@ -39,11 +38,11 @@ func main() {
 	}
 	defer riverClient.Stop(context.Background())
 
-	// Initialize handlers
-	reminderHandler := initHandlers(db)
+	// Initialize controller
+	reminderController := controllers.NewReminderController(db)
 
 	// Create and run application
-	application := app.New(db, riverClient, reminderHandler)
+	application := app.New(db, riverClient, reminderController)
 	if err := application.Run(); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
@@ -88,7 +87,3 @@ func initRiver(db *pgxpool.Pool) (*river.Client[pgx.Tx], error) {
 	return riverClient, nil
 }
 
-func initHandlers(db *pgxpool.Pool) *handlers.ReminderHandler {
-	reminderController := controllers.NewReminderController(db)
-	return handlers.NewReminderHandler(reminderController)
-}

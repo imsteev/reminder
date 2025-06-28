@@ -42,6 +42,33 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
     setValue("startTime", localDateTime);
   };
 
+  const setStartTimeIn = (minutes: number) => {
+    const futureTime = new Date(Date.now() + minutes * 60000);
+    const localDateTime = new Date(
+      futureTime.getTime() - futureTime.getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .slice(0, 16);
+    setValue("startTime", localDateTime);
+  };
+
+  const setStartTimeTomorrow = (hour: number, minute = 0) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(hour, minute, 0, 0);
+    const localDateTime = new Date(
+      tomorrow.getTime() - tomorrow.getTimezoneOffset() * 60000
+    )
+      .toISOString()
+      .slice(0, 16);
+    setValue("startTime", localDateTime);
+  };
+
+  // Set default start time to 5 minutes from now
+  React.useEffect(() => {
+    setStartTimeIn(5);
+  }, []);
+
   const onSubmit = (data: ReminderFormData) => {
     createMutation.mutate({
       user_id: "default-user",
@@ -155,25 +182,64 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       <div>
         <label
           htmlFor="startTime"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Start Time
+          When should we start sending reminders?
         </label>
-        <div className="flex gap-2">
+        
+        {/* Quick Time Buttons */}
+        <div className="mb-3">
+          <p className="text-xs text-gray-500 mb-2">Quick select:</p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={setStartTimeToNow}
+              className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 border border-blue-200 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Now
+            </button>
+            <button
+              type="button"
+              onClick={() => setStartTimeIn(15)}
+              className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              In 15 min
+            </button>
+            <button
+              type="button"
+              onClick={() => setStartTimeIn(60)}
+              className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              In 1 hour
+            </button>
+            <button
+              type="button"
+              onClick={() => setStartTimeTomorrow(9)}
+              className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              Tomorrow 9am
+            </button>
+            <button
+              type="button"
+              onClick={() => setStartTimeTomorrow(13)}
+              className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              Tomorrow 1pm
+            </button>
+          </div>
+        </div>
+
+        {/* Custom Time Input */}
+        <div>
+          <p className="text-xs text-gray-500 mb-2">Or pick a specific time:</p>
           <input
             type="datetime-local"
             id="startTime"
             {...register("startTime", { required: "Start time is required" })}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <button
-            type="button"
-            onClick={setStartTimeToNow}
-            className="px-3 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Now
-          </button>
         </div>
+        
         {errors.startTime && (
           <p className="text-red-500 text-sm mt-1">
             {errors.startTime.message}

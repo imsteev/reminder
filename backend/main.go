@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"reminder-app/internal/app"
+	"reminder-app/app"
 )
 
 func main() {

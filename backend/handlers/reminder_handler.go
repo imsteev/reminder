@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"reminder-app/internal/controllers"
+	"reminder-app/controllers"
 
 	"github.com/gin-gonic/gin"
 )

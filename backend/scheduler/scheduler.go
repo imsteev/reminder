@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"reminder-app/internal/controllers"
-	"reminder-app/internal/jobs"
+	"reminder-app/controllers"
+	"reminder-app/jobs"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

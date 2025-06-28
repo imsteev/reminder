@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"os"
 
-	"reminder-app/internal/controllers"
-	"reminder-app/internal/handlers"
-	"reminder-app/internal/jobs"
-	"reminder-app/internal/scheduler"
+	"reminder-app/controllers"
+	"reminder-app/handlers"
+	"reminder-app/jobs"
+	"reminder-app/scheduler"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"

@@ -8,7 +8,7 @@ import (
 
 	"reminder-app/app"
 	"reminder-app/controllers"
-	"reminder-app/handlers"
+	"reminder-app/app/handlers"
 	"reminder-app/jobs"
 
 	"github.com/jackc/pgx/v5"

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"reminder-app/handlers"
+	"reminder-app/app/handlers"
 	"reminder-app/scheduler"
 
 	"github.com/gin-gonic/gin"

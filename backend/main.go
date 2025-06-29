@@ -49,14 +49,14 @@ func main() {
 	}
 	defer db.Close()
 
-	riverClient, err := initRiver(db)
+	riverClient, err := initRiver(db, jobs.NewWorkers())
 	if err != nil {
 		log.Fatal("Failed to initialize River:", err)
 	}
 	defer riverClient.Stop(context.Background())
 
 	// Wire everything together
-	reminderController := remindercontroller.NewReminderController(db)
+	reminderController := remindercontroller.NewReminderController(db, riverClient)
 	app := app.New(db, riverClient, reminderController)
 	api := handler.New(app)
 
@@ -65,9 +65,7 @@ func main() {
 	}
 }
 
-func initRiver(db *pgxpool.Pool) (*river.Client[pgx.Tx], error) {
-	workers := river.NewWorkers()
-	river.AddWorker(workers, &jobs.ReminderWorker{})
+func initRiver(db *pgxpool.Pool, workers *river.Workers) (*river.Client[pgx.Tx], error) {
 	riverClient, err := riverclient.New(db, &river.Config{
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 10},

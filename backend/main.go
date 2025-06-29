@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -14,8 +13,6 @@ import (
 	"reminder-app/handler"
 	"reminder-app/jobs"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/riverqueue/river"
 )
@@ -43,13 +40,20 @@ func main() {
 		}
 	}
 
+	// Postgres
 	db, err := db.New(dbURL)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
 	defer db.Close()
 
-	riverClient, err := initRiver(db, jobs.NewWorkers())
+	// River
+	riverClient, err := riverclient.New(db, &river.Config{
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 10},
+		},
+		Workers: jobs.NewWorkers(),
+	})
 	if err != nil {
 		log.Fatal("Failed to initialize River:", err)
 	}
@@ -63,18 +67,4 @@ func main() {
 	if err := http.ListenAndServe(":"+port, api); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
-}
-
-func initRiver(db *pgxpool.Pool, workers *river.Workers) (*river.Client[pgx.Tx], error) {
-	riverClient, err := riverclient.New(db, &river.Config{
-		Queues: map[string]river.QueueConfig{
-			river.QueueDefault: {MaxWorkers: 10},
-		},
-		Workers: workers,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create river client: %w", err)
-	}
-
-	return riverClient, nil
 }

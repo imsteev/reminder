@@ -1,8 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { Field } from "@base-ui-components/react/field";
-import { Input } from "@base-ui-components/react/input";
+import { Button, Field, Input, Textarea } from "./ui";
 import { createReminder } from "../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -80,30 +79,22 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       className="space-y-4 bg-white p-6 rounded-lg shadow"
     >
       <Field.Root>
-        <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
-          Message
-        </Field.Label>
+        <Field.Label>Message</Field.Label>
         <Field.Control
           render={
-            <textarea
+            <Textarea
               {...register("message", { required: "Message is required" })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
               rows={3}
+              error={!!errors.message}
             />
           }
         />
-        {errors.message && (
-          <Field.Error className="text-red-500 text-sm mt-1">
-            {errors.message.message}
-          </Field.Error>
-        )}
+        {errors.message && <Field.Error>{errors.message.message}</Field.Error>}
       </Field.Root>
 
       <Field.Root>
-        <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
-          Phone Number
-        </Field.Label>
+        <Field.Label>Phone Number</Field.Label>
         <Field.Control
           render={
             <Input
@@ -111,23 +102,19 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               {...register("phoneNumber", {
                 required: "Phone number is required",
               })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder={UI_TEXT.PHONE_PLACEHOLDER}
+              error={!!errors.phoneNumber}
             />
           }
         />
         {errors.phoneNumber && (
-          <Field.Error className="text-red-500 text-sm mt-1">
-            {errors.phoneNumber.message}
-          </Field.Error>
+          <Field.Error>{errors.phoneNumber.message}</Field.Error>
         )}
       </Field.Root>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Field.Root>
-          <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
-            Times per day
-          </Field.Label>
+          <Field.Label>Times per day</Field.Label>
           <Field.Control
             render={
               <Input
@@ -137,23 +124,19 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                   min: 1,
                   valueAsNumber: true,
                 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
                 min={FORM_DEFAULTS.MIN_FREQUENCY}
+                error={!!errors.frequency}
               />
             }
           />
           {errors.frequency && (
-            <Field.Error className="text-red-500 text-sm mt-1">
-              {errors.frequency.message}
-            </Field.Error>
+            <Field.Error>{errors.frequency.message}</Field.Error>
           )}
         </Field.Root>
 
         <Field.Root>
-          <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
-            Interval (hours)
-          </Field.Label>
+          <Field.Label>Interval (hours)</Field.Label>
           <Field.Control
             render={
               <Input
@@ -163,16 +146,14 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                   min: 1,
                   valueAsNumber: true,
                 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
                 min={FORM_DEFAULTS.MIN_INTERVAL}
+                error={!!errors.intervalHours}
               />
             }
           />
           {errors.intervalHours && (
-            <Field.Error className="text-red-500 text-sm mt-1">
-              {errors.intervalHours.message}
-            </Field.Error>
+            <Field.Error>{errors.intervalHours.message}</Field.Error>
           )}
         </Field.Root>
       </div>
@@ -191,59 +172,67 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             {UI_TEXT.QUICK_SELECT_LABEL}
           </p>
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={setStartTimeToNow}
-              className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 border border-blue-200 rounded-full hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-full"
             >
               Now
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
-              className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="rounded-full"
             >
               In 15 min
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
-              className="px-3 py-1.5 text-sm bg-green-100 text-green-700 border border-green-200 rounded-full hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="rounded-full"
             >
               In 1 hour
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
                   TIME_PRESETS.TOMORROW_9AM.minute,
                 )
               }
-              className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="rounded-full"
             >
               Tomorrow 9am
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_1PM.hour,
                   TIME_PRESETS.TOMORROW_1PM.minute,
                 )
               }
-              className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="rounded-full"
             >
               Tomorrow 1pm
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Custom Time Input */}
         <Field.Root>
-          <p className="text-xs text-gray-500 mb-2">
-            {UI_TEXT.CUSTOM_TIME_LABEL}
-          </p>
+          <Field.Description>{UI_TEXT.CUSTOM_TIME_LABEL}</Field.Description>
           <Field.Control
             render={
               <Input
@@ -251,25 +240,23 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                 {...register("startTime", {
                   required: "Start time is required",
                 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                error={!!errors.startTime}
               />
             }
           />
           {errors.startTime && (
-            <Field.Error className="text-red-500 text-sm mt-1">
-              {errors.startTime.message}
-            </Field.Error>
+            <Field.Error>{errors.startTime.message}</Field.Error>
           )}
         </Field.Root>
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={createMutation.isPending}
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        className="w-full"
       >
         {createMutation.isPending ? "Creating..." : "Create Reminder"}
-      </button>
+      </Button>
     </form>
   );
 };

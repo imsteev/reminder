@@ -1,5 +1,6 @@
 import React from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Button } from "./ui";
 import { deleteReminder, Reminder } from "../api/reminders";
 import { format } from "date-fns";
 
@@ -70,13 +71,15 @@ const ReminderList: React.FC<ReminderListProps> = ({
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => deleteMutation.mutate(reminder.id)}
                 disabled={deleteMutation.isPending}
-                className="ml-4 text-red-600 hover:text-red-800 disabled:opacity-50"
+                className="ml-4 text-red-600 hover:text-red-800"
               >
                 🗑️
-              </button>
+              </Button>
             </div>
           </div>
         ))

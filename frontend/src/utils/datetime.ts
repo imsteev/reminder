@@ -4,7 +4,7 @@
  */
 export function toLocalDateTimeString(date: Date): string {
   const localDateTime = new Date(
-    date.getTime() - date.getTimezoneOffset() * 60000
+    date.getTime() - date.getTimezoneOffset() * 60000,
   )
     .toISOString()
     .slice(0, 16);

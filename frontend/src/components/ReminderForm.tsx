@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
+import { Field } from "@base-ui-components/react/field";
+import { Input } from "@base-ui-components/react/input";
 import { createReminder } from "../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -77,98 +79,102 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-4 bg-white p-6 rounded-lg shadow"
     >
-      <div>
-        <label
-          htmlFor="message"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+      <Field.Root>
+        <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
           Message
-        </label>
-        <textarea
-          id="message"
-          {...register("message", { required: "Message is required" })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
-          rows={3}
+        </Field.Label>
+        <Field.Control
+          render={
+            <textarea
+              {...register("message", { required: "Message is required" })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
+              rows={3}
+            />
+          }
         />
         {errors.message && (
-          <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>
+          <Field.Error className="text-red-500 text-sm mt-1">
+            {errors.message.message}
+          </Field.Error>
         )}
-      </div>
+      </Field.Root>
 
-      <div>
-        <label
-          htmlFor="phoneNumber"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+      <Field.Root>
+        <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
           Phone Number
-        </label>
-        <input
-          type="tel"
-          id="phoneNumber"
-          {...register("phoneNumber", { required: "Phone number is required" })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder={UI_TEXT.PHONE_PLACEHOLDER}
+        </Field.Label>
+        <Field.Control
+          render={
+            <Input
+              type="tel"
+              {...register("phoneNumber", {
+                required: "Phone number is required",
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={UI_TEXT.PHONE_PLACEHOLDER}
+            />
+          }
         />
         {errors.phoneNumber && (
-          <p className="text-red-500 text-sm mt-1">
+          <Field.Error className="text-red-500 text-sm mt-1">
             {errors.phoneNumber.message}
-          </p>
+          </Field.Error>
         )}
-      </div>
+      </Field.Root>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="frequency"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <Field.Root>
+          <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
             Times per day
-          </label>
-          <input
-            type="number"
-            id="frequency"
-            {...register("frequency", {
-              required: "Frequency is required",
-              min: 1,
-              valueAsNumber: true,
-            })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
-            min={FORM_DEFAULTS.MIN_FREQUENCY}
+          </Field.Label>
+          <Field.Control
+            render={
+              <Input
+                type="number"
+                {...register("frequency", {
+                  required: "Frequency is required",
+                  min: 1,
+                  valueAsNumber: true,
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
+                min={FORM_DEFAULTS.MIN_FREQUENCY}
+              />
+            }
           />
           {errors.frequency && (
-            <p className="text-red-500 text-sm mt-1">
+            <Field.Error className="text-red-500 text-sm mt-1">
               {errors.frequency.message}
-            </p>
+            </Field.Error>
           )}
-        </div>
+        </Field.Root>
 
-        <div>
-          <label
-            htmlFor="intervalHours"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <Field.Root>
+          <Field.Label className="block text-sm font-medium text-gray-700 mb-1">
             Interval (hours)
-          </label>
-          <input
-            type="number"
-            id="intervalHours"
-            {...register("intervalHours", {
-              required: "Interval is required",
-              min: 1,
-              valueAsNumber: true,
-            })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
-            min={FORM_DEFAULTS.MIN_INTERVAL}
+          </Field.Label>
+          <Field.Control
+            render={
+              <Input
+                type="number"
+                {...register("intervalHours", {
+                  required: "Interval is required",
+                  min: 1,
+                  valueAsNumber: true,
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
+                min={FORM_DEFAULTS.MIN_INTERVAL}
+              />
+            }
           />
           {errors.intervalHours && (
-            <p className="text-red-500 text-sm mt-1">
+            <Field.Error className="text-red-500 text-sm mt-1">
               {errors.intervalHours.message}
-            </p>
+            </Field.Error>
           )}
-        </div>
+        </Field.Root>
       </div>
 
       <div>
@@ -178,10 +184,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         >
           {UI_TEXT.START_TIME_LABEL}
         </label>
-        
+
         {/* Quick Time Buttons */}
         <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-2">{UI_TEXT.QUICK_SELECT_LABEL}</p>
+          <p className="text-xs text-gray-500 mb-2">
+            {UI_TEXT.QUICK_SELECT_LABEL}
+          </p>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -206,14 +214,24 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeTomorrow(TIME_PRESETS.TOMORROW_9AM.hour, TIME_PRESETS.TOMORROW_9AM.minute)}
+              onClick={() =>
+                setStartTimeTomorrow(
+                  TIME_PRESETS.TOMORROW_9AM.hour,
+                  TIME_PRESETS.TOMORROW_9AM.minute,
+                )
+              }
               className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               Tomorrow 9am
             </button>
             <button
               type="button"
-              onClick={() => setStartTimeTomorrow(TIME_PRESETS.TOMORROW_1PM.hour, TIME_PRESETS.TOMORROW_1PM.minute)}
+              onClick={() =>
+                setStartTimeTomorrow(
+                  TIME_PRESETS.TOMORROW_1PM.hour,
+                  TIME_PRESETS.TOMORROW_1PM.minute,
+                )
+              }
               className="px-3 py-1.5 text-sm bg-purple-100 text-purple-700 border border-purple-200 rounded-full hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               Tomorrow 1pm
@@ -222,21 +240,27 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         </div>
 
         {/* Custom Time Input */}
-        <div>
-          <p className="text-xs text-gray-500 mb-2">{UI_TEXT.CUSTOM_TIME_LABEL}</p>
-          <input
-            type="datetime-local"
-            id="startTime"
-            {...register("startTime", { required: "Start time is required" })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        
-        {errors.startTime && (
-          <p className="text-red-500 text-sm mt-1">
-            {errors.startTime.message}
+        <Field.Root>
+          <p className="text-xs text-gray-500 mb-2">
+            {UI_TEXT.CUSTOM_TIME_LABEL}
           </p>
-        )}
+          <Field.Control
+            render={
+              <Input
+                type="datetime-local"
+                {...register("startTime", {
+                  required: "Start time is required",
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            }
+          />
+          {errors.startTime && (
+            <Field.Error className="text-red-500 text-sm mt-1">
+              {errors.startTime.message}
+            </Field.Error>
+          )}
+        </Field.Root>
       </div>
 
       <button

@@ -20,6 +20,8 @@ import (
 	"github.com/riverqueue/river"
 )
 
+// API: handler -> app -> sub-controllers -> db
+// Async: riverclient -> db <- workers
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("Error loading .env file:", err)

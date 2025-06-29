@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"reminder-app/app"
 	"reminder-app/controllers"
+	"reminder-app/handler"
 	"reminder-app/jobs"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -42,40 +43,17 @@ func main() {
 	// Initialize controller
 	reminderController := controllers.NewReminderController(db)
 
-	// Setup router
-	router := gin.Default()
-
-	router.Use(func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	})
-
-	// Create and run application
 	app := app.New(db, riverClient, reminderController)
-
-	api := router.Group("/api")
-	api.GET("/reminders", app.GetReminders)
-	api.POST("/reminders", app.CreateReminder)
-	api.PUT("/reminders/:id", app.UpdateReminder)
-	api.DELETE("/reminders/:id", app.DeleteReminder)
+	api := handler.New(app)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	if err := app.Run(":"+port, router); err != nil {
+	if err := http.ListenAndServe(":"+port, api); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
-
 }
 
 func initDB() (*pgxpool.Pool, error) {

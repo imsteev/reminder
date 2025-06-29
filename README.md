@@ -13,12 +13,14 @@ A web application for managing recurring text message reminders, built with Go b
 ## Tech Stack
 
 ### Backend
+
 - **Go 1.24** - Main backend language
 - **Gin** - HTTP web framework
 - **PostgreSQL** - Database
 - **River** - Background job processing with PostgreSQL
 
 ### Frontend
+
 - **React 18** - Frontend framework
 - **Tailwind CSS v4** - Styling
 - **React Query** - Data fetching and state management
@@ -28,6 +30,7 @@ A web application for managing recurring text message reminders, built with Go b
 ## Getting Started
 
 ### Prerequisites
+
 - Go 1.24+
 - PostgreSQL
 - Node.js 18+
@@ -42,7 +45,7 @@ A web application for managing recurring text message reminders, built with Go b
 3. Update `.env` with your database credentials
 4. Run database migrations:
    ```bash
-   psql -d your_database < migrations/001_create_reminders_table.sql
+   psql -d your_database < migrate/001_create_reminders_table.sql
    ```
 5. Install dependencies and run:
    ```bash
@@ -123,6 +126,7 @@ Frontend will start on http://localhost:3000
 ## Example Use Case
 
 "I need to take medication 3 times a day, every 8 hours starting at 8 AM":
+
 - Message: "Time to take your medication!"
 - Phone Number: +1234567890
 - Times per day: 3
@@ -134,6 +138,7 @@ This will send reminders at 8 AM, 4 PM, and 12 AM daily.
 ## Development
 
 The application uses a clean architecture pattern:
+
 - **Handlers** manage HTTP requests/responses
 - **Controllers** contain business logic
 - **Jobs** handle background processing

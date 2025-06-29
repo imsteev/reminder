@@ -79,10 +79,12 @@ func (rc *Controller) CreateReminder(reminder *Reminder) error {
 		river.PeriodicInterval(period),
 		func() (river.JobArgs, *river.InsertOpts) {
 			return jobs.PeriodicReminderJobArgs{
-				ReminderID:  reminder.ID,
-				PhoneNumber: reminder.PhoneNumber,
-				Message:     reminder.Message,
-			}, nil
+					ReminderID:  reminder.ID,
+					PhoneNumber: reminder.PhoneNumber,
+					Message:     reminder.Message,
+				}, &river.InsertOpts{
+					ScheduledAt: reminder.StartTime,
+				}
 		},
 		nil,
 	)
@@ -124,14 +126,18 @@ func (rc *Controller) UpdateReminder(id int, reminder *Reminder) error {
 	if reminder.IsActive {
 		period := time.Duration(reminder.IntervalHours) * time.Hour
 
+		// TODO: delete old job
+
 		periodicJob := river.NewPeriodicJob(
 			river.PeriodicInterval(period),
 			func() (river.JobArgs, *river.InsertOpts) {
 				return jobs.PeriodicReminderJobArgs{
-					ReminderID:  id,
-					PhoneNumber: reminder.PhoneNumber,
-					Message:     reminder.Message,
-				}, nil
+						ReminderID:  id,
+						PhoneNumber: reminder.PhoneNumber,
+						Message:     reminder.Message,
+					}, &river.InsertOpts{
+						ScheduledAt: time.Now(), // TODO: get this from user input
+					}
 			},
 			nil,
 		)

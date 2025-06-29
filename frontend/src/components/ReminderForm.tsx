@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Field, Input, Textarea } from "./ui";
+import { Button, Field, Input, Select, Textarea } from "./ui";
 import { createReminder } from "../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -17,11 +17,13 @@ import {
 } from "../constants";
 
 interface ReminderFormData {
-  message: string;
-  phoneNumber: string;
-  frequency: number;
-  intervalHours: number;
-  startTime: string;
+  message?: string;
+  phoneNumber?: string;
+  cadenceType?: "frequency" | "interval";
+  frequency?: number;
+  intervalHours?: number;
+  intervalMinutes?: number;
+  startTime?: string;
 }
 
 interface ReminderFormProps {
@@ -34,8 +36,15 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
     handleSubmit,
     reset,
     setValue,
-    formState: { errors },
-  } = useForm<ReminderFormData>();
+    watch,
+    formState: {},
+  } = useForm<ReminderFormData>({
+    defaultValues: {
+      cadenceType: "frequency",
+    },
+  });
+
+  const cadenceType = watch("cadenceType");
 
   const createMutation = useMutation({
     mutationFn: createReminder,
@@ -63,13 +72,31 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
   }, []);
 
   const onSubmit = (data: ReminderFormData) => {
+    let frequency = 1;
+    let intervalHours = 1;
+
+    if (data.cadenceType === "frequency") {
+      frequency = data.frequency || 1;
+      intervalHours = 24 / frequency;
+    } else if (data.cadenceType === "interval") {
+      if (data.intervalMinutes) {
+        intervalHours = data.intervalMinutes / 60;
+        frequency = Math.ceil(24 / intervalHours);
+      } else {
+        intervalHours = data.intervalHours || 1;
+        frequency = Math.ceil(24 / intervalHours);
+      }
+    }
+
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
-      message: data.message,
-      phone_number: data.phoneNumber,
-      frequency: data.frequency,
-      interval_hours: data.intervalHours,
-      start_time: new Date(data.startTime).toISOString(),
+      message: data.message || "",
+      phone_number: data.phoneNumber || "",
+      frequency,
+      interval_hours: intervalHours,
+      start_time: data.startTime
+        ? new Date(data.startTime).toISOString()
+        : new Date().toISOString(),
     });
   };
 
@@ -83,14 +110,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         <Field.Control
           render={
             <Textarea
-              {...register("message", { required: "Message is required" })}
+              {...register("message")}
               placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
               rows={3}
-              error={!!errors.message}
             />
           }
         />
-        {errors.message && <Field.Error>{errors.message.message}</Field.Error>}
       </Field.Root>
 
       <Field.Root>
@@ -99,63 +124,83 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           render={
             <Input
               type="tel"
-              {...register("phoneNumber", {
-                required: "Phone number is required",
-              })}
+              {...register("phoneNumber")}
               placeholder={UI_TEXT.PHONE_PLACEHOLDER}
-              error={!!errors.phoneNumber}
             />
           }
         />
-        {errors.phoneNumber && (
-          <Field.Error>{errors.phoneNumber.message}</Field.Error>
-        )}
       </Field.Root>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         <Field.Root>
-          <Field.Label>Times per day</Field.Label>
+          <Field.Label>Every</Field.Label>
           <Field.Control
             render={
-              <Input
-                type="number"
-                {...register("frequency", {
-                  required: "Frequency is required",
-                  min: 1,
-                  valueAsNumber: true,
-                })}
-                placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
-                min={FORM_DEFAULTS.MIN_FREQUENCY}
-                error={!!errors.frequency}
-              />
+              <Select {...register("cadenceType")}>
+                <option value="day">day</option>
+                <option value="hour">hour</option>
+                <option value="minute">minute</option>
+              </Select>
             }
           />
-          {errors.frequency && (
-            <Field.Error>{errors.frequency.message}</Field.Error>
-          )}
         </Field.Root>
 
-        <Field.Root>
-          <Field.Label>Interval (hours)</Field.Label>
-          <Field.Control
-            render={
-              <Input
-                type="number"
-                {...register("intervalHours", {
-                  required: "Interval is required",
-                  min: 1,
-                  valueAsNumber: true,
-                })}
-                placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
-                min={FORM_DEFAULTS.MIN_INTERVAL}
-                error={!!errors.intervalHours}
+        {cadenceType === "frequency" && (
+          <Field.Root>
+            <Field.Label>Times per day</Field.Label>
+            <Field.Control
+              render={
+                <Input
+                  type="number"
+                  {...register("frequency", {
+                    min: 1,
+                    valueAsNumber: true,
+                  })}
+                  placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
+                  min={FORM_DEFAULTS.MIN_FREQUENCY}
+                />
+              }
+            />
+          </Field.Root>
+        )}
+
+        {cadenceType === "interval" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Field.Root>
+              <Field.Label>Every X hours</Field.Label>
+              <Field.Control
+                render={
+                  <Input
+                    type="number"
+                    {...register("intervalHours", {
+                      min: 1,
+                      valueAsNumber: true,
+                    })}
+                    placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
+                    min={FORM_DEFAULTS.MIN_INTERVAL}
+                  />
+                }
               />
-            }
-          />
-          {errors.intervalHours && (
-            <Field.Error>{errors.intervalHours.message}</Field.Error>
-          )}
-        </Field.Root>
+            </Field.Root>
+
+            <Field.Root>
+              <Field.Label>OR every X minutes</Field.Label>
+              <Field.Control
+                render={
+                  <Input
+                    type="number"
+                    {...register("intervalMinutes", {
+                      min: 1,
+                      valueAsNumber: true,
+                    })}
+                    placeholder="30"
+                    min={1}
+                  />
+                }
+              />
+            </Field.Root>
+          </div>
+        )}
       </div>
 
       <div>
@@ -206,7 +251,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute,
+                  TIME_PRESETS.TOMORROW_9AM.minute
                 )
               }
               className="rounded-full"
@@ -220,7 +265,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_1PM.hour,
-                  TIME_PRESETS.TOMORROW_1PM.minute,
+                  TIME_PRESETS.TOMORROW_1PM.minute
                 )
               }
               className="rounded-full"
@@ -234,19 +279,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         <Field.Root>
           <Field.Description>{UI_TEXT.CUSTOM_TIME_LABEL}</Field.Description>
           <Field.Control
-            render={
-              <Input
-                type="datetime-local"
-                {...register("startTime", {
-                  required: "Start time is required",
-                })}
-                error={!!errors.startTime}
-              />
-            }
+            render={<Input type="datetime-local" {...register("startTime")} />}
           />
-          {errors.startTime && (
-            <Field.Error>{errors.startTime.message}</Field.Error>
-          )}
         </Field.Root>
       </div>
 

@@ -72,6 +72,7 @@ func (rc *Controller) CreateReminder(reminder *Reminder) error {
 		return err
 	}
 
+	// this needs to be improved
 	period := time.Duration(reminder.IntervalHours) * time.Hour
 
 	periodicJob := river.NewPeriodicJob(

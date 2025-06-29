@@ -22,6 +22,6 @@ type PeriodicReminderJobWorker struct {
 }
 
 func (w *PeriodicReminderJobWorker) Work(ctx context.Context, job *river.Job[PeriodicReminderJobArgs]) error {
-	fmt.Printf("This job will run once immediately then approximately once every 15 minutes\n")
+	fmt.Printf("PeriodicReminderJobWorker: %v\n", job.Args)
 	return nil
 }

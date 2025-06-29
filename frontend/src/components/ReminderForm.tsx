@@ -174,7 +174,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
-              variant="secondary"
+              variant="blue"
               size="sm"
               onClick={setStartTimeToNow}
               className="rounded-full"
@@ -183,7 +183,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </Button>
             <Button
               type="button"
-              variant="secondary"
+              variant="green"
               size="sm"
               onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
               className="rounded-full"
@@ -192,7 +192,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </Button>
             <Button
               type="button"
-              variant="secondary"
+              variant="green"
               size="sm"
               onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
               className="rounded-full"
@@ -201,7 +201,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </Button>
             <Button
               type="button"
-              variant="secondary"
+              variant="purple"
               size="sm"
               onClick={() =>
                 setStartTimeTomorrow(
@@ -215,7 +215,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </Button>
             <Button
               type="button"
-              variant="secondary"
+              variant="purple"
               size="sm"
               onClick={() =>
                 setStartTimeTomorrow(

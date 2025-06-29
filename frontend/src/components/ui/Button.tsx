@@ -2,7 +2,15 @@ import React from "react";
 import { cn } from "../../utils/cn";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "destructive";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "destructive"
+    | "blue"
+    | "green"
+    | "purple";
   size?: "sm" | "md" | "lg";
   children: React.ReactNode;
 }
@@ -23,6 +31,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "border border-gray-300 bg-transparent hover:bg-gray-50 focus:ring-gray-500",
       ghost: "bg-transparent hover:bg-gray-100 focus:ring-gray-500",
       destructive: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+      blue: "bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 focus:ring-blue-500",
+      green:
+        "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 focus:ring-green-500",
+      purple:
+        "bg-purple-100 text-purple-700 border border-purple-200 hover:bg-purple-200 focus:ring-purple-500",
     };
 
     const sizes = {

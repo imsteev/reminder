@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"reminder-app/controllers"
+	"reminder-app/controller/remindercontroller"
 	"reminder-app/jobs"
 
 	"github.com/jackc/pgx/v5"
@@ -58,7 +58,7 @@ func (s *Scheduler) processReminders(ctx context.Context) {
 	}
 }
 
-func (s *Scheduler) getAllActiveReminders(ctx context.Context) ([]controllers.Reminder, error) {
+func (s *Scheduler) getAllActiveReminders(ctx context.Context) ([]remindercontroller.Reminder, error) {
 	rows, err := s.db.Query(ctx,
 		"SELECT id, user_id, message, phone_number, frequency, interval_hours, start_time, end_time, is_active, created_at, updated_at FROM reminders WHERE is_active = true")
 	if err != nil {
@@ -66,9 +66,9 @@ func (s *Scheduler) getAllActiveReminders(ctx context.Context) ([]controllers.Re
 	}
 	defer rows.Close()
 
-	var reminders []controllers.Reminder
+	var reminders []remindercontroller.Reminder
 	for rows.Next() {
-		var r controllers.Reminder
+		var r remindercontroller.Reminder
 		err := rows.Scan(&r.ID, &r.UserID, &r.Message, &r.PhoneNumber, &r.Frequency, &r.IntervalHours, &r.StartTime, &r.EndTime, &r.IsActive, &r.CreatedAt, &r.UpdatedAt)
 		if err != nil {
 			return nil, err
@@ -79,7 +79,7 @@ func (s *Scheduler) getAllActiveReminders(ctx context.Context) ([]controllers.Re
 	return reminders, nil
 }
 
-func (s *Scheduler) shouldSendReminder(reminder controllers.Reminder, now time.Time) bool {
+func (s *Scheduler) shouldSendReminder(reminder remindercontroller.Reminder, now time.Time) bool {
 	if now.Before(reminder.StartTime) {
 		return false
 	}
@@ -99,7 +99,7 @@ func (s *Scheduler) shouldSendReminder(reminder controllers.Reminder, now time.T
 	return remindersSent < reminder.Frequency || reminder.Frequency == -1
 }
 
-func (s *Scheduler) scheduleReminderJob(ctx context.Context, reminder controllers.Reminder) {
+func (s *Scheduler) scheduleReminderJob(ctx context.Context, reminder remindercontroller.Reminder) {
 	jobArgs := jobs.ReminderJobArgs{
 		ReminderID:  reminder.ID,
 		PhoneNumber: reminder.PhoneNumber,

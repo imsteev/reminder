@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"reminder-app/app"
-	"reminder-app/controllers"
+	"reminder-app/controller/remindercontroller"
 	"reminder-app/db"
 	"reminder-app/db/riverclient"
 	"reminder-app/handler"
@@ -54,7 +54,7 @@ func main() {
 	defer riverClient.Stop(context.Background())
 
 	// Wire everything together
-	reminderController := controllers.NewReminderController(db)
+	reminderController := remindercontroller.NewReminderController(db)
 	app := app.New(db, riverClient, reminderController)
 	api := handler.New(app)
 

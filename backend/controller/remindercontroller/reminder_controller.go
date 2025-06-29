@@ -1,4 +1,4 @@
-package controllers
+package remindercontroller
 
 import (
 	"context"
@@ -21,15 +21,15 @@ type Reminder struct {
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 }
 
-type ReminderController struct {
+type Controller struct {
 	db *pgxpool.Pool
 }
 
-func NewReminderController(db *pgxpool.Pool) *ReminderController {
-	return &ReminderController{db: db}
+func NewReminderController(db *pgxpool.Pool) *Controller {
+	return &Controller{db: db}
 }
 
-func (rc *ReminderController) GetReminders(userID string) ([]Reminder, error) {
+func (rc *Controller) GetReminders(userID string) ([]Reminder, error) {
 	rows, err := rc.db.Query(context.Background(),
 		"SELECT id, user_id, message, phone_number, frequency, interval_hours, start_time, end_time, is_active, created_at, updated_at FROM reminders WHERE user_id = $1",
 		userID)
@@ -51,7 +51,7 @@ func (rc *ReminderController) GetReminders(userID string) ([]Reminder, error) {
 	return reminders, nil
 }
 
-func (rc *ReminderController) CreateReminder(reminder *Reminder) error {
+func (rc *Controller) CreateReminder(reminder *Reminder) error {
 	reminder.CreatedAt = time.Now()
 	reminder.UpdatedAt = time.Now()
 	reminder.IsActive = true
@@ -66,7 +66,7 @@ func (rc *ReminderController) CreateReminder(reminder *Reminder) error {
 	return err
 }
 
-func (rc *ReminderController) UpdateReminder(id int, reminder *Reminder) error {
+func (rc *Controller) UpdateReminder(id int, reminder *Reminder) error {
 	reminder.UpdatedAt = time.Now()
 
 	_, err := rc.db.Exec(context.Background(),
@@ -79,7 +79,7 @@ func (rc *ReminderController) UpdateReminder(id int, reminder *Reminder) error {
 	return err
 }
 
-func (rc *ReminderController) DeleteReminder(id int) error {
+func (rc *Controller) DeleteReminder(id int) error {
 	_, err := rc.db.Exec(context.Background(), "DELETE FROM reminders WHERE id = $1", id)
 	return err
 }

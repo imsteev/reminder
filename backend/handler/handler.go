@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 	"reminder-app/app"
-	"reminder-app/controllers"
+	"reminder-app/controller/remindercontroller"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -65,7 +65,7 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateReminder(c *gin.Context) {
-	var reminder controllers.Reminder
+	var reminder remindercontroller.Reminder
 	if err := c.ShouldBindJSON(&reminder); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -87,7 +87,7 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 		return
 	}
 
-	var reminder controllers.Reminder
+	var reminder remindercontroller.Reminder
 	if err := c.ShouldBindJSON(&reminder); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

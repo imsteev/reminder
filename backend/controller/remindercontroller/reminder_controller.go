@@ -1,6 +1,7 @@
 package remindercontroller
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reminder-app/jobs"
@@ -58,7 +59,34 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
 			nil,
 		)
 
-		rc.riverClient.PeriodicJobs().Add(periodicJob)
+		handle := rc.riverClient.PeriodicJobs().Add(periodicJob)
+
+		reminder.JobID = int(handle)
+		err = rc.db.Save(reminder).Error
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("handle", handle)
+
+	} else {
+		insertResult, err := rc.riverClient.Insert(context.Background(), jobs.PeriodicReminderJobArgs{
+			ReminderID:  int(reminder.ID),
+			PhoneNumber: "", // Will need to get from contact_methods
+			Message:     reminder.Message,
+		}, &river.InsertOpts{
+			ScheduledAt: reminder.StartTime,
+		})
+		if err != nil {
+			return err
+		}
+
+		reminder.JobID = int(insertResult.Job.ID)
+		err = rc.db.Save(reminder).Error
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil

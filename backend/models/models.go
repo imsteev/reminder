@@ -34,4 +34,5 @@ type Reminder struct {
 	Type          string    `json:"type" gorm:"not null;type:reminder_type"`
 	PeriodMinutes int64     `json:"period_minutes" gorm:"not null;default:0"`
 	DeliveryType  string    `json:"delivery_type" gorm:"not null;type:delivery_type"`
+	JobID         int       `json:"job_id"`
 }

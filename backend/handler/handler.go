@@ -99,7 +99,7 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 		return
 	}
 
-	reminder.Model.ID = uint(id)
+	reminder.BaseModel.ID = uint(id)
 	if err := h.app.UpdateReminder(id, &reminder); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

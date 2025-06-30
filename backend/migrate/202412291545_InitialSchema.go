@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	Planner202412291545 = NewPlanner("202412291545", Up202412291545, Down202412291545)
+	Plan202412291545 = NewMigrationPlan("202412291545", Up202412291545, Down202412291545)
 )
 
 // Up202412291545 creates the initial schema with ENUMs, tables, and test data

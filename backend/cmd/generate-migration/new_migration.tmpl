@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	Planner{{.Timestamp}} = NewPlanner("{{.Timestamp}}", {{.UpFuncName}}, {{.DownFuncName}})
+	Plan{{.Timestamp}} = NewMigrationPlan("{{.Timestamp}}", {{.UpFuncName}}, {{.DownFuncName}})
 )
 
 // {{.UpFuncName}} applies the migration

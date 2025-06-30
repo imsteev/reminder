@@ -16,6 +16,7 @@ import {
 } from "../constants";
 
 interface ReminderFormData {
+  name?: string;
   message?: string;
   contactValue?: string;
   reminderType?: "one-time" | "repeating";
@@ -40,8 +41,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
     formState: {},
   } = useForm<ReminderFormData>({
     defaultValues: {
+      name: "",
       reminderType: "repeating",
       deliveryType: "sms",
+      intervalDays: 1,
+      intervalHours: 0,
+      intervalMinutes: 0,
     },
   });
 
@@ -102,7 +107,18 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       className="space-y-4 bg-white p-6 rounded-lg shadow"
     >
       <Field.Root>
-        <Field.Label>Message</Field.Label>
+        <Field.Control
+          render={
+            <Input
+              {...register("name")}
+              className="w-full"
+              placeholder="Name"
+            />
+          }
+        />
+      </Field.Root>
+
+      <Field.Root>
         <Field.Control
           render={
             <Textarea
@@ -300,26 +316,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute,
+                  TIME_PRESETS.TOMORROW_9AM.minute
                 )
               }
               className="rounded-full"
             >
               Tomorrow 9am
-            </Button>
-            <Button
-              type="button"
-              variant="purple"
-              size="sm"
-              onClick={() =>
-                setStartTimeTomorrow(
-                  TIME_PRESETS.TOMORROW_1PM.hour,
-                  TIME_PRESETS.TOMORROW_1PM.minute,
-                )
-              }
-              className="rounded-full"
-            >
-              Tomorrow 1pm
             </Button>
           </div>
         </div>

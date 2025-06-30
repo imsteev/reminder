@@ -30,5 +30,5 @@ export const UI_TEXT = {
   QUICK_SELECT_LABEL: "Quick select:",
   CUSTOM_TIME_LABEL: "Date (local time)",
   PHONE_PLACEHOLDER: "+1234567890",
-  MESSAGE_PLACEHOLDER: "Take your medication",
+  MESSAGE_PLACEHOLDER: "Message",
 } as const;

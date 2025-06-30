@@ -51,23 +51,13 @@ const ReminderList: React.FC<ReminderListProps> = ({
                   {reminder.message}
                 </p>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <p>📱 {reminder.phone_number}</p>
-                  <p>
-                    🔄 {reminder.frequency}x daily, every{" "}
-                    {reminder.interval_hours} hours
-                  </p>
+                  <p>Every 🔄 {reminder.period_minutes} minutes</p>
                   <p>
                     ⏰ Starts:{" "}
                     {format(
                       new Date(reminder.start_time),
-                      "MMM d, yyyy h:mm a",
+                      "MMM d, yyyy h:mm a"
                     )}
-                  </p>
-                  <p className="flex items-center">
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full mr-2 ${reminder.is_active ? "bg-green-500" : "bg-gray-400"}`}
-                    ></span>
-                    {reminder.is_active ? "Active" : "Inactive"}
                   </p>
                 </div>
               </div>

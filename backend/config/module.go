@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/samber/do/v2"
+	"go.uber.org/fx"
 )
 
 // NewConfig creates a new configuration instance (clean constructor)
@@ -24,12 +24,7 @@ func NewConfig() *Config {
 	}
 }
 
-// newConfigDI is a wrapper for DI that calls the clean constructor
-func newConfigDI(i do.Injector) (*Config, error) {
-	return NewConfig(), nil
-}
-
-// Package defines the config dependency injection package
-var Package = do.Package(
-	do.Lazy(newConfigDI),
+// Module defines the config fx module
+var Module = fx.Module("config",
+	fx.Provide(NewConfig),
 )

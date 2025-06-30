@@ -71,6 +71,6 @@ func main() {
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Printf("1. Edit %s and implement Up%s() and Down%s() methods\n", outputPath, timestamp, timestamp)
-	fmt.Printf("2. Add %s() to the plans slice in migrate/migrator.go\n", data.ConstructorName)
+	fmt.Printf("2. Add Planner%s to the plans slice in migrate/migrator.go\n", timestamp)
 	fmt.Println("3. Run migrations with: go run ./cmd/migrate up")
 }

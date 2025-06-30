@@ -3,37 +3,15 @@ package migrate
 import (
 	"reminder-app/models"
 
-	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
-const (
-	MigrationID = "202412291545"
+var (
+	Planner202412291545 = NewPlanner("202412291545", Up202412291545, Down202412291545)
 )
 
-// Migration202412291545InitialSchema creates the complete initial schema for the reminder app
-type MigrationPlan202412291545 struct {
-	Up   func(tx *gorm.DB) error
-	Down func(tx *gorm.DB) error
-}
-
-func NewMigrationPlan202412291545() *MigrationPlan202412291545 {
-	return &MigrationPlan202412291545{
-		Up:   Up,
-		Down: Down,
-	}
-}
-
-func (m *MigrationPlan202412291545) CreateMigration() *gormigrate.Migration {
-	return &gormigrate.Migration{
-		ID:       MigrationID,
-		Migrate:  m.Up,
-		Rollback: m.Down,
-	}
-}
-
-// Up creates the initial schema with ENUMs, tables, and test data
-func Up(tx *gorm.DB) error {
+// Up202412291545 creates the initial schema with ENUMs, tables, and test data
+func Up202412291545(tx *gorm.DB) error {
 	// First, create the ENUM types if they don't exist
 	if err := tx.Exec(`
 		DO $$ 
@@ -80,8 +58,8 @@ func Up(tx *gorm.DB) error {
 	return nil
 }
 
-// Down rolls back the initial schema
-func Down(tx *gorm.DB) error {
+// Down202412291545 rolls back the initial schema
+func Down202412291545(tx *gorm.DB) error {
 	// Drop custom indexes first
 	if err := tx.Exec("DROP INDEX IF EXISTS idx_reminders_user_start_time").Error; err != nil {
 		return err

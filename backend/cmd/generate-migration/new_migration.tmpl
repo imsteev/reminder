@@ -1,34 +1,12 @@
 package migrate
 
 import (
-	"github.com/go-gormigrate/gormigrate/v2"
 	"gorm.io/gorm"
 )
 
-const (
-	MigrationID{{.Timestamp}} = "{{.Timestamp}}"
+var (
+	Planner{{.Timestamp}} = NewPlanner("{{.Timestamp}}", {{.UpFuncName}}, {{.DownFuncName}})
 )
-
-// {{.StructName}} {{.Description}}
-type {{.PlanName}} struct {
-	Up   func(tx *gorm.DB) error
-	Down func(tx *gorm.DB) error
-}
-
-func {{.ConstructorName}}() *{{.PlanName}} {
-	return &{{.PlanName}}{
-		Up:   {{.UpFuncName}},
-		Down: {{.DownFuncName}},
-	}
-}
-
-func (m *{{.PlanName}}) CreateMigration() *gormigrate.Migration {
-	return &gormigrate.Migration{
-		ID:       MigrationID{{.Timestamp}},
-		Migrate:  m.Up,
-		Rollback: m.Down,
-	}
-}
 
 // {{.UpFuncName}} applies the migration
 func {{.UpFuncName}}(tx *gorm.DB) error {

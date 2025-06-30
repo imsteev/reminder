@@ -17,50 +17,30 @@ import (
 	"gorm.io/gorm"
 )
 
-var Module = fx.Options(
-	// Configuration
-	config.Module,
-
-	// Database layer
-	pgxpool.Module,
-	gormmodule.Module,
-	riverclient.Module,
-
-	// Business logic layer
-	controller.Module,
-
-	// Presentation layer
-	handler.Module,
-)
-
-// StartReminderService starts the reminder service with all dependencies
 func StartReminderService(
 	cfg *config.Config,
 	gormDB *gorm.DB,
 	riverClient *river.Client[pgx.Tx],
 	httpHandler *handler.Handler,
 ) {
-	server := &http.Server{
-		Addr:    ":" + cfg.Port,
-		Handler: httpHandler,
-	}
+	server := &http.Server{Addr: ":" + cfg.Port, Handler: httpHandler}
 
 	fmt.Printf("Starting reminder service on port %s\n", cfg.Port)
 
-	// Start the server (this will block)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("HTTP server error: %v", err)
 	}
 }
 
-// API: handler -> app -> sub-controllers -> db
-// Async: riverclient -> db <- workers
 func main() {
-
 	fxApp := fx.New(
-		Module,
+		config.Module,
+		pgxpool.Module,
+		gormmodule.Module,
+		riverclient.Module,
+		controller.Module,
+		handler.Module,
 		fx.Invoke(StartReminderService),
 	)
-
 	fxApp.Run()
 }

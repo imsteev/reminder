@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,9 @@ import (
 	"text/template"
 	"time"
 )
+
+//go:embed new_migration.tmpl
+var migrationTemplate string
 
 type MigrationData struct {
 	Timestamp       string
@@ -42,9 +46,8 @@ func main() {
 		DownFuncName:    fmt.Sprintf("Down%s", timestamp),
 	}
 
-	// Read template
-	templatePath := filepath.Join("migrate", "new_migration.tmpl")
-	tmpl, err := template.ParseFiles(templatePath)
+	// Parse embedded template
+	tmpl, err := template.New("migration").Parse(migrationTemplate)
 	if err != nil {
 		log.Fatal("Failed to parse template:", err)
 	}

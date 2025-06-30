@@ -9,6 +9,5 @@ import (
 var Module = fx.Module("controller",
 	fx.Provide(
 		remindercontroller.New,
-		New,
 	),
 )

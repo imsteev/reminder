@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	"reminder-app/controller"
+	"reminder-app/controller/remindercontroller"
 	"reminder-app/models"
 	"strconv"
 
@@ -12,13 +12,13 @@ import (
 
 type Handler struct {
 	*gin.Engine
-	app *controller.App
+	reminderController *remindercontroller.Controller
 }
 
 type Params struct {
 	fx.In
 
-	App *controller.App
+	ReminderController *remindercontroller.Controller
 }
 
 var _ http.Handler = (*Handler)(nil)
@@ -26,8 +26,8 @@ var _ http.Handler = (*Handler)(nil)
 func New(p Params) *Handler {
 	api := gin.Default()
 	h := &Handler{
-		Engine: api,
-		app:    p.App,
+		Engine:             api,
+		reminderController: p.ReminderController,
 	}
 	return h.init()
 }
@@ -68,7 +68,7 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 		return
 	}
 
-	reminders, err := h.app.GetReminders(userID)
+	reminders, err := h.reminderController.GetReminders(userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -84,7 +84,7 @@ func (h *Handler) handleCreateReminder(c *gin.Context) {
 		return
 	}
 
-	if err := h.app.CreateReminder(&reminder); err != nil {
+	if err := h.reminderController.CreateReminder(&reminder); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -107,7 +107,7 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 	}
 
 	reminder.BaseModel.ID = uint(id)
-	if err := h.app.UpdateReminder(id, &reminder); err != nil {
+	if err := h.reminderController.UpdateReminder(id, &reminder); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -123,7 +123,7 @@ func (h *Handler) handleDeleteReminder(c *gin.Context) {
 		return
 	}
 
-	if err := h.app.DeleteReminder(id); err != nil {
+	if err := h.reminderController.DeleteReminder(id); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

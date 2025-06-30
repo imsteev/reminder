@@ -1,4 +1,4 @@
-package app
+package controller
 
 import (
 	"reminder-app/controller/remindercontroller"
@@ -9,13 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Top-level controller
 type App struct {
 	db                 *gorm.DB
 	river              *river.Client[pgx.Tx]
 	reminderController *remindercontroller.Controller
 }
 
-func New(db *gorm.DB, riverClient *river.Client[pgx.Tx], reminderController *remindercontroller.Controller) *App {
+func NewApp(db *gorm.DB, riverClient *river.Client[pgx.Tx], reminderController *remindercontroller.Controller) *App {
 	return &App{
 		db:                 db,
 		river:              riverClient,

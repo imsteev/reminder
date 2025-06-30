@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"reminder-app/app"
+	"reminder-app/controller"
 	"reminder-app/controller/remindercontroller"
 	"reminder-app/db"
 	"reminder-app/db/riverclient"
@@ -61,7 +61,7 @@ func main() {
 
 	// Wire everything together
 	reminderController := remindercontroller.NewReminderController(dbConnections.GORM, riverClient)
-	app := app.New(dbConnections.GORM, riverClient, reminderController)
+	app := controller.NewApp(dbConnections.GORM, riverClient, reminderController)
 	api := handler.New(app)
 
 	if err := http.ListenAndServe(":"+port, api); err != nil {

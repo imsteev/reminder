@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	"reminder-app/app"
+	"reminder-app/controller"
 	"reminder-app/models"
 	"strconv"
 
@@ -11,12 +11,12 @@ import (
 
 type Handler struct {
 	*gin.Engine
-	app *app.App
+	app *controller.App
 }
 
 var _ http.Handler = (*Handler)(nil)
 
-func New(app *app.App) *Handler {
+func New(app *controller.App) *Handler {
 	api := gin.Default()
 	h := &Handler{
 		Engine: api,

@@ -28,10 +28,6 @@ migrate-reset:
     psql ${DATABASE_URL:-postgres://localhost/reminder?sslmode=disable} -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
     cd backend && go run ./cmd/migrate up
 
-# Generate a new migration file
-migrate-generate DESCRIPTION:
-    cd backend && go run ./cmd/generate-migration {{DESCRIPTION}}
-
 # Generate a new migration file (alternative syntax)
 migrate-new MIGRATION_NAME:
     cd backend && go run ./cmd/generate-migration {{MIGRATION_NAME}}

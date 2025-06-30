@@ -8,9 +8,9 @@ import (
 	"reminder-app/config"
 	"reminder-app/controller"
 	gormmodule "reminder-app/db/gorm"
-	"reminder-app/db/pgxpool"
 	"reminder-app/db/riverclient"
 	"reminder-app/handler"
+	"reminder-app/workers"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
@@ -40,9 +40,9 @@ func StartReminderService(cfg *config.Config, httpHandler *handler.Handler) {
 func main() {
 	fxApp := fx.New(
 		config.Module,
-		pgxpool.Module,
 		gormmodule.Module,
 		riverclient.Module,
+		workers.Module,
 		controller.Module,
 		handler.Module,
 		fx.Invoke(StartRiverClient),

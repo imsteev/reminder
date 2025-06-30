@@ -1,8 +1,9 @@
 package riverclient
 
 import (
+	"context"
 	"fmt"
-	"reminder-app/jobs"
+	"reminder-app/config"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,18 +15,24 @@ import (
 type Params struct {
 	fx.In
 
-	PGXPool *pgxpool.Pool
+	Config  *config.Config
+	Workers *river.Workers
 }
 
 func New(p Params) (*river.Client[pgx.Tx], error) {
+	pgxPool, err := pgxpool.New(context.Background(), p.Config.DatabaseURL)
+	if err != nil {
+		return nil, err
+	}
+
 	config := &river.Config{
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 10},
 		},
-		Workers: jobs.NewWorkers(),
+		Workers: p.Workers,
 	}
 
-	riverClient, err := river.NewClient(riverpgxv5.New(p.PGXPool), config)
+	riverClient, err := river.NewClient(riverpgxv5.New(pgxPool), config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create river client: %w", err)
 	}

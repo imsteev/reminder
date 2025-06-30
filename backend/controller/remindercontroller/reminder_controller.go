@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reminder-app/jobs"
 	"reminder-app/models"
+	"reminder-app/workers"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -56,7 +56,7 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
 		periodicJob := river.NewPeriodicJob(
 			river.PeriodicInterval(period),
 			func() (river.JobArgs, *river.InsertOpts) {
-				return jobs.PeriodicReminderJobArgs{
+				return workers.PeriodicReminderJobArgs{
 						ReminderID:  int(reminder.ID),
 						PhoneNumber: "", // Will need to get from contact_methods
 						Message:     reminder.Message,
@@ -78,7 +78,7 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
 		fmt.Println("handle", handle)
 
 	} else {
-		insertResult, err := rc.riverClient.Insert(context.Background(), jobs.PeriodicReminderJobArgs{
+		insertResult, err := rc.riverClient.Insert(context.Background(), workers.PeriodicReminderJobArgs{
 			ReminderID:  int(reminder.ID),
 			PhoneNumber: "", // Will need to get from contact_methods
 			Message:     reminder.Message,

@@ -1,9 +1,10 @@
-package jobs
+package workers
 
 import "github.com/riverqueue/river"
 
-func NewWorkers() *river.Workers {
+func New() *river.Workers {
 	workers := river.NewWorkers()
 	river.AddWorker(workers, &PeriodicReminderJobWorker{})
+	river.AddWorker(workers, &OneTimeReminderJobWorker{})
 	return workers
 }

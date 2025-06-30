@@ -24,14 +24,10 @@ type Params struct {
 var _ http.Handler = (*Handler)(nil)
 
 func New(p Params) *Handler {
-	return newHandler(p.App)
-}
-
-func newHandler(app *controller.App) *Handler {
 	api := gin.Default()
 	h := &Handler{
 		Engine: api,
-		app:    app,
+		app:    p.App,
 	}
 	return h.init()
 }

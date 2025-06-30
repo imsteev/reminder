@@ -109,3 +109,5 @@ func (rc *Controller) DeleteReminder(id int64) error {
 	err := rc.db.Delete(&models.Reminder{}, id).Error
 	return err
 }
+
+

@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
@@ -25,6 +26,10 @@ func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
 	}
 
 	fmt.Println("River client started successfully")
+}
+
+func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
+	workers.RestorePeriodicJobs(db, riverClient)
 }
 
 func StartReminderService(cfg *config.Config, httpHandler *handler.Handler) {
@@ -46,6 +51,7 @@ func main() {
 		controller.Module,
 		handler.Module,
 		fx.Invoke(StartRiverClient),
+		fx.Invoke(RestorePeriodicJobs),
 		fx.Invoke(StartReminderService),
 	)
 	fxApp.Run()

@@ -2,6 +2,7 @@ package app
 
 import (
 	"reminder-app/controller/remindercontroller"
+	"reminder-app/models"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
@@ -22,15 +23,15 @@ func New(db *gorm.DB, riverClient *river.Client[pgx.Tx], reminderController *rem
 	}
 }
 
-func (a *App) GetReminders(userID int64) ([]remindercontroller.Reminder, error) {
+func (a *App) GetReminders(userID int64) ([]models.Reminder, error) {
 	return a.reminderController.GetReminders(userID)
 }
 
-func (a *App) CreateReminder(reminder *remindercontroller.Reminder) error {
+func (a *App) CreateReminder(reminder *models.Reminder) error {
 	return a.reminderController.CreateReminder(reminder)
 }
 
-func (a *App) UpdateReminder(id int64, reminder *remindercontroller.Reminder) error {
+func (a *App) UpdateReminder(id int64, reminder *models.Reminder) error {
 	return a.reminderController.UpdateReminder(id, reminder)
 }
 

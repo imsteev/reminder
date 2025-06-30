@@ -8,13 +8,11 @@ import (
 
 type User struct {
 	gorm.Model
-	ID   int64  `json:"id" gorm:"primaryKey"`
 	Name string `json:"name" gorm:"not null"`
 }
 
 type ContactMethod struct {
 	gorm.Model
-	ID          int64  `json:"id" gorm:"primaryKey"`
 	UserID      int64  `json:"user_id" gorm:"not null"`
 	Type        string `json:"type" gorm:"not null;type:contact_type"`
 	Value       string `json:"value" gorm:"not null"`
@@ -26,7 +24,6 @@ type ContactMethod struct {
 
 type Reminder struct {
 	gorm.Model
-	ID            int64     `json:"id" gorm:"primaryKey"`
 	UserID        int64     `json:"user_id" gorm:"not null"`
 	Message       string    `json:"message" gorm:"not null"`
 	StartTime     time.Time `json:"start_time" gorm:"not null"`

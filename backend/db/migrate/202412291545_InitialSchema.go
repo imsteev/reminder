@@ -57,10 +57,12 @@ func Up202412291545(tx *gorm.DB) error {
 
 	// Always ensure test user exists with ID 1
 	testUser := &models.User{
-		ID:   1,
+		Model: gorm.Model{
+			ID: 1,
+		},
 		Name: "Test User",
 	}
-	
+
 	// Use FirstOrCreate to avoid duplicates if migration is run multiple times
 	if err := tx.FirstOrCreate(testUser, "id = ?", 1).Error; err != nil {
 		return err

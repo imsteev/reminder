@@ -31,7 +31,7 @@ func main() {
 	{
 		dbURL = os.Getenv("DATABASE_URL")
 		if dbURL == "" {
-			dbURL = "postgres://localhost/reminder_app?sslmode=disable"
+			dbURL = "postgres://localhost/reminder?sslmode=disable"
 		}
 
 		port = os.Getenv("PORT")

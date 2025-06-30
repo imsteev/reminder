@@ -26,6 +26,7 @@ migrate:
 # Reset database (drop all tables and re-run migrations)
 migrate-reset:
     psql ${DATABASE_URL:-postgres://localhost/reminder?sslmode=disable} -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
+    river migrate-up --line main --database-url "${DATABASE_URL:-postgres://localhost/reminder?sslmode=disable}"
     cd backend && go run ./cmd/migrate up
 
 # Generate a new migration file (alternative syntax)

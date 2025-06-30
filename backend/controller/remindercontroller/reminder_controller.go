@@ -14,8 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Use the Reminder model from models package
-
 type Controller struct {
 	db          *gorm.DB
 	riverClient *river.Client[pgx.Tx]
@@ -45,7 +43,6 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
 		return err
 	}
 
-	// Only create periodic job for repeating reminders
 	if reminder.Type == "repeating" {
 		if reminder.PeriodMinutes <= 0 {
 			return errors.New("period minutes must be greater than 0")
@@ -109,5 +106,3 @@ func (rc *Controller) DeleteReminder(id int64) error {
 	err := rc.db.Delete(&models.Reminder{}, id).Error
 	return err
 }
-
-

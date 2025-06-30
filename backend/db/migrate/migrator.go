@@ -5,7 +5,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewMigrator creates a new gormigrate migrator with all migrations
 func NewMigrator(db *gorm.DB) *gormigrate.Gormigrate {
 
 	plans := []*MigrationPlan{

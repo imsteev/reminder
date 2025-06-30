@@ -3,6 +3,7 @@
 - When a questionable decision is made, explain why using a `(AI)` prefix
 - Always run prettier on JSX/TSX/CSS/HTML files
 - Never check in binary files into the codebase
+- Always trim whitespace for lines of code. If a file doesnt end on a newline, add one.
 
 ### React
 

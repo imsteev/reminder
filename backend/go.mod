@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/riverqueue/river v0.7.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.7.0
+	github.com/samber/do/v2 v2.0.0-beta.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.0
 )
@@ -36,6 +37,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/riverqueue/river/riverdriver v0.7.0 // indirect
 	github.com/riverqueue/river/rivertype v0.7.0 // indirect
+	github.com/samber/go-type-to-string v1.4.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect

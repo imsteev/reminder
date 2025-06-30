@@ -4,17 +4,17 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"os"
-
+	"reminder-app/config"
 	"reminder-app/controller"
 	"reminder-app/controller/remindercontroller"
 	"reminder-app/db"
 	"reminder-app/db/riverclient"
 	"reminder-app/handler"
-	"reminder-app/jobs"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/joho/godotenv"
 	"github.com/riverqueue/river"
+	"github.com/samber/do/v2"
 )
 
 // API: handler -> app -> sub-controllers -> db
@@ -24,47 +24,41 @@ func main() {
 		log.Println("Error loading .env file:", err)
 	}
 
-	var (
-		dbURL string
-		port  string
+	// Create DI injector with all packages
+	injector := do.New(
+		config.Package,
+		db.Package,
+		riverclient.Package,
+		remindercontroller.Package,
+		controller.Package,
+		handler.Package,
 	)
-	{
-		dbURL = os.Getenv("DATABASE_URL")
-		if dbURL == "" {
-			dbURL = "postgres://localhost/reminder?sslmode=disable"
-		}
+	defer injector.Shutdown()
 
-		port = os.Getenv("PORT")
-		if port == "" {
-			port = "8080"
-		}
+	// Get services from DI container
+	cfg, err := do.Invoke[*config.Config](injector)
+	if err != nil {
+		log.Fatal("Failed to get config:", err)
 	}
 
-	// Postgres
-	dbConnections, err := db.New(dbURL)
+	dbConnections, err := do.Invoke[*db.Connections](injector)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
 	defer dbConnections.Close()
 
-	// River
-	riverClient, err := riverclient.New(dbConnections.PGXPool, &river.Config{
-		Queues: map[string]river.QueueConfig{
-			river.QueueDefault: {MaxWorkers: 10},
-		},
-		Workers: jobs.NewWorkers(),
-	})
+	riverClient, err := do.Invoke[*river.Client[pgx.Tx]](injector)
 	if err != nil {
 		log.Fatal("Failed to initialize River:", err)
 	}
 	defer riverClient.Stop(context.Background())
 
-	// Wire everything together
-	reminderController := remindercontroller.NewReminderController(dbConnections.GORM, riverClient)
-	app := controller.NewApp(dbConnections.GORM, riverClient, reminderController)
-	api := handler.New(app)
+	api, err := do.Invoke[*handler.Handler](injector)
+	if err != nil {
+		log.Fatal("Failed to initialize handler:", err)
+	}
 
-	if err := http.ListenAndServe(":"+port, api); err != nil {
+	if err := http.ListenAndServe(":"+cfg.Port, api); err != nil {
 		log.Fatal("Failed to run application:", err)
 	}
 }

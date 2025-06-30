@@ -49,3 +49,4 @@ func (c *Connections) Close() {
 		c.PGXPool.Close()
 	}
 }
+

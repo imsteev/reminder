@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,15 +15,19 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
-func StartReminderService(
-	cfg *config.Config,
-	gormDB *gorm.DB,
-	riverClient *river.Client[pgx.Tx],
-	httpHandler *handler.Handler,
-) {
+func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
+	fmt.Println("Starting River background job client...")
+	
+	if err := riverClient.Start(context.Background()); err != nil {
+		log.Fatalf("Failed to start River client: %v", err)
+	}
+	
+	fmt.Println("River client started successfully")
+}
+
+func StartReminderService(cfg *config.Config, httpHandler *handler.Handler) {
 	server := &http.Server{Addr: ":" + cfg.Port, Handler: httpHandler}
 
 	fmt.Printf("Starting reminder service on port %s\n", cfg.Port)
@@ -40,6 +45,7 @@ func main() {
 		riverclient.Module,
 		controller.Module,
 		handler.Module,
+		fx.Invoke(StartRiverClient),
 		fx.Invoke(StartReminderService),
 	)
 	fxApp.Run()

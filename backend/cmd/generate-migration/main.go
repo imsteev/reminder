@@ -54,7 +54,7 @@ func main() {
 
 	// Create output file
 	outputFilename := fmt.Sprintf("%s_%s.go", timestamp, description)
-	outputPath := filepath.Join("migrate", outputFilename)
+	outputPath := filepath.Join("db", "migrate", outputFilename)
 
 	file, err := os.Create(outputPath)
 	if err != nil {
@@ -71,6 +71,6 @@ func main() {
 	fmt.Println()
 	fmt.Println("Next steps:")
 	fmt.Printf("1. Edit %s and implement Up%s() and Down%s() methods\n", outputPath, timestamp, timestamp)
-	fmt.Printf("2. Add Planner%s to the plans slice in migrate/migrator.go\n", timestamp)
+	fmt.Printf("2. Add Plan%s to the plans slice in db/migrate/migrator.go\n", timestamp)
 	fmt.Println("3. Run migrations with: go run ./cmd/migrate up")
 }

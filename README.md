@@ -47,8 +47,8 @@ go run ./cmd/generate-migration FeatureName
 
 To add a migration:
 1. Run `just migrate-new YourFeature` (uses embedded Go templates)
-2. Edit the generated file in `backend/migrate/`
-3. Add constructor to `migrator.go`
+2. Edit the generated file in `backend/db/migrate/`
+3. Add constructor to `db/migrate/migrator.go`
 
 ## API
 

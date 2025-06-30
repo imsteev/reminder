@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"reminder-app/db"
-	"reminder-app/migrate"
+	"reminder-app/db/migrate"
 
 	"github.com/joho/godotenv"
 )

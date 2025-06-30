@@ -24,7 +24,6 @@ func NewConfig() *Config {
 	}
 }
 
-// Module defines the config fx module
 var Module = fx.Module("config",
 	fx.Provide(NewConfig),
 )

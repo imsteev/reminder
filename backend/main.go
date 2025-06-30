@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -19,7 +18,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// Module defines all fx options for the complete application
 var Module = fx.Options(
 	// Configuration
 	config.Module,
@@ -36,6 +34,26 @@ var Module = fx.Options(
 	handler.Module,
 )
 
+// StartReminderService starts the reminder service with all dependencies
+func StartReminderService(
+	cfg *config.Config,
+	gormDB *gorm.DB,
+	riverClient *river.Client[pgx.Tx],
+	httpHandler *handler.Handler,
+) {
+	server := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: httpHandler,
+	}
+
+	fmt.Printf("Starting reminder service on port %s\n", cfg.Port)
+	
+	// Start the server (this will block)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("HTTP server error: %v", err)
+	}
+}
+
 // API: handler -> app -> sub-controllers -> db
 // Async: riverclient -> db <- workers
 func main() {
@@ -46,53 +64,7 @@ func main() {
 	// Create fx app with all modules and lifecycle
 	fxApp := fx.New(
 		Module,
-		fx.Invoke(func(
-			cfg *config.Config,
-			gormDB *gorm.DB,
-			riverClient *river.Client[pgx.Tx],
-			httpHandler *handler.Handler,
-			lc fx.Lifecycle,
-		) {
-			server := &http.Server{
-				Addr:    ":" + cfg.Port,
-				Handler: httpHandler,
-			}
-
-			lc.Append(fx.Hook{
-				OnStart: func(ctx context.Context) error {
-					fmt.Printf("Starting application on port %s\n", cfg.Port)
-					go func() {
-						if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-							log.Printf("HTTP server error: %v", err)
-						}
-					}()
-					return nil
-				},
-				OnStop: func(ctx context.Context) error {
-					fmt.Println("Shutting down application...")
-
-					// Shutdown HTTP server
-					if err := server.Shutdown(ctx); err != nil {
-						log.Printf("HTTP server shutdown error: %v", err)
-					}
-
-					// Stop River client
-					if riverClient != nil {
-						riverClient.Stop(ctx)
-					}
-
-					// Close database connections
-					if gormDB != nil {
-						if sqlDB, err := gormDB.DB(); err == nil {
-							sqlDB.Close()
-						}
-					}
-
-					fmt.Println("Application shut down complete")
-					return nil
-				},
-			})
-		}),
+		fx.Invoke(StartReminderService),
 	)
 
 	// Start the fx app (blocks until stopped)

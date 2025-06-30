@@ -5,12 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
+var plans = []*MigrationPlan{
+	Plan202412291545,
+}
+
 func NewMigrator(db *gorm.DB) *gormigrate.Gormigrate {
-
-	plans := []*MigrationPlan{
-		Plan202412291545,
-	}
-
 	migrations := make([]*gormigrate.Migration, 0, len(plans))
 	for _, plan := range plans {
 		migrations = append(migrations, makeGormMigration(plan))

@@ -2,6 +2,7 @@ package migrate
 
 import (
 	"reminder-app/models"
+	"slices"
 
 	"gorm.io/gorm"
 )
@@ -9,6 +10,14 @@ import (
 var (
 	Plan202412291545 = NewMigrationPlan("202412291545", Up202412291545, Down202412291545)
 )
+
+func init() {
+	if !slices.ContainsFunc(plans, func(p *MigrationPlan) bool {
+		return p.ID == Plan202412291545.ID
+	}) {
+		panic("Plan202412291545 is not registered")
+	}
+}
 
 // Up202412291545 creates the initial schema with ENUMs, tables, indexes, and test user
 func Up202412291545(tx *gorm.DB) error {

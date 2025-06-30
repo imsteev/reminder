@@ -1,6 +1,8 @@
 package migrate
 
 import (
+	"slices"
+
 	"gorm.io/gorm"
 )
 
@@ -8,18 +10,20 @@ var (
 	Plan{{.Timestamp}} = NewMigrationPlan("{{.Timestamp}}", {{.UpFuncName}}, {{.DownFuncName}})
 )
 
+func init() {	
+	if !slices.ContainsFunc(plans, func(p *MigrationPlan) bool {
+		return p.ID == Plan{{.Timestamp}}.ID
+	}) {
+		panic("Plan{{.Timestamp}} is not registered")
+	}
+}
+
 // {{.UpFuncName}} applies the migration
 func {{.UpFuncName}}(tx *gorm.DB) error {
-	// TODO: Implement migration logic
-	// Example:
-	// return tx.AutoMigrate(&models.NewTable{})
 	return nil
 }
 
 // {{.DownFuncName}} rolls back the migration
 func {{.DownFuncName}}(tx *gorm.DB) error {
-	// TODO: Implement rollback logic
-	// Example:
-	// return tx.Migrator().DropTable(&models.NewTable{})
 	return nil
 }

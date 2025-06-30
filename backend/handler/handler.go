@@ -49,9 +49,15 @@ func (h *Handler) init() *Handler {
 }
 
 func (h *Handler) handleGetReminders(c *gin.Context) {
-	userID := c.Query("user_id")
-	if userID == "" {
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id is required"})
+		return
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
 		return
 	}
 
@@ -81,7 +87,7 @@ func (h *Handler) handleCreateReminder(c *gin.Context) {
 
 func (h *Handler) handleUpdateReminder(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid reminder id"})
 		return
@@ -104,7 +110,7 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 
 func (h *Handler) handleDeleteReminder(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid reminder id"})
 		return

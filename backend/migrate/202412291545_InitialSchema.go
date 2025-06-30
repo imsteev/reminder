@@ -1,0 +1,121 @@
+package migrate
+
+import (
+	"reminder-app/models"
+
+	"github.com/go-gormigrate/gormigrate/v2"
+	"gorm.io/gorm"
+)
+
+const (
+	MigrationID = "202412291545"
+)
+
+// Migration202412291545InitialSchema creates the complete initial schema for the reminder app
+type MigrationPlan202412291545 struct {
+	Up   func(tx *gorm.DB) error
+	Down func(tx *gorm.DB) error
+}
+
+func NewMigrationPlan202412291545() *MigrationPlan202412291545 {
+	return &MigrationPlan202412291545{
+		Up:   Up,
+		Down: Down,
+	}
+}
+
+func (m *MigrationPlan202412291545) CreateMigration() *gormigrate.Migration {
+	return &gormigrate.Migration{
+		ID:       MigrationID,
+		Migrate:  m.Up,
+		Rollback: m.Down,
+	}
+}
+
+// Up creates the initial schema with ENUMs, tables, and test data
+func Up(tx *gorm.DB) error {
+	// First, create the ENUM types if they don't exist
+	if err := tx.Exec(`
+		DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'contact_type') THEN
+				CREATE TYPE contact_type AS ENUM ('phone', 'email');
+			END IF;
+		END $$;
+	`).Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec(`
+		DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'reminder_type') THEN
+				CREATE TYPE reminder_type AS ENUM ('one-time', 'repeating');
+			END IF;
+		END $$;
+	`).Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec(`
+		DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'delivery_type') THEN
+				CREATE TYPE delivery_type AS ENUM ('sms', 'email');
+			END IF;
+		END $$;
+	`).Error; err != nil {
+		return err
+	}
+
+	// Create tables using GORM's AutoMigrate
+	if err := tx.AutoMigrate(
+		&models.User{},
+		&models.ContactMethod{},
+		&models.Reminder{},
+	); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Down rolls back the initial schema
+func Down(tx *gorm.DB) error {
+	// Drop custom indexes first
+	if err := tx.Exec("DROP INDEX IF EXISTS idx_reminders_user_start_time").Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec("DROP INDEX IF EXISTS idx_reminders_type_delivery").Error; err != nil {
+		return err
+	}
+
+	// Drop tables in reverse order
+	if err := tx.Migrator().DropTable(&models.Reminder{}); err != nil {
+		return err
+	}
+
+	if err := tx.Migrator().DropTable(&models.ContactMethod{}); err != nil {
+		return err
+	}
+
+	if err := tx.Migrator().DropTable(&models.User{}); err != nil {
+		return err
+	}
+
+	// Drop ENUM types
+	if err := tx.Exec("DROP TYPE IF EXISTS delivery_type").Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec("DROP TYPE IF EXISTS reminder_type").Error; err != nil {
+		return err
+	}
+
+	if err := tx.Exec("DROP TYPE IF EXISTS contact_type").Error; err != nil {
+		return err
+	}
+
+	return nil
+}

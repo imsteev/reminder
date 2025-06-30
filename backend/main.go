@@ -41,14 +41,14 @@ func main() {
 	}
 
 	// Postgres
-	db, err := db.New(dbURL)
+	dbConnections, err := db.New(dbURL)
 	if err != nil {
 		log.Fatal("Failed to initialize database:", err)
 	}
-	defer db.Close()
+	defer dbConnections.Close()
 
 	// River
-	riverClient, err := riverclient.New(db, &river.Config{
+	riverClient, err := riverclient.New(dbConnections.PGXPool, &river.Config{
 		Queues: map[string]river.QueueConfig{
 			river.QueueDefault: {MaxWorkers: 10},
 		},
@@ -60,8 +60,8 @@ func main() {
 	defer riverClient.Stop(context.Background())
 
 	// Wire everything together
-	reminderController := remindercontroller.NewReminderController(db, riverClient)
-	app := app.New(db, riverClient, reminderController)
+	reminderController := remindercontroller.NewReminderController(dbConnections.GORM, riverClient)
+	app := app.New(dbConnections.GORM, riverClient, reminderController)
 	api := handler.New(app)
 
 	if err := http.ListenAndServe(":"+port, api); err != nil {

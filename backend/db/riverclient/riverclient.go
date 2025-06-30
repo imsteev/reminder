@@ -10,8 +10,8 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 )
 
-func New(db *pgxpool.Pool, config *river.Config) (*river.Client[pgx.Tx], error) {
-	riverClient, err := river.NewClient(riverpgxv5.New(db), config)
+func New(pgxPool *pgxpool.Pool, config *river.Config) (*river.Client[pgx.Tx], error) {
+	riverClient, err := river.NewClient(riverpgxv5.New(pgxPool), config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create river client: %w", err)
 	}

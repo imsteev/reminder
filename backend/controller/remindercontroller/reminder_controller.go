@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
@@ -20,8 +21,15 @@ type Controller struct {
 	riverClient *river.Client[pgx.Tx]
 }
 
-func NewReminderController(db *gorm.DB, riverClient *river.Client[pgx.Tx]) *Controller {
-	return &Controller{db: db, riverClient: riverClient}
+type Params struct {
+	fx.In
+
+	DB    *gorm.DB
+	River *river.Client[pgx.Tx]
+}
+
+func New(p Params) *Controller {
+	return &Controller{db: p.DB, riverClient: p.River}
 }
 
 func (rc *Controller) GetReminders(userID int64) ([]models.Reminder, error) {

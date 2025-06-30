@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"reminder-app/config"
 	"reminder-app/controller"
-	"reminder-app/controller/remindercontroller"
-	"reminder-app/db"
+	gormmodule "reminder-app/db/gorm"
+	"reminder-app/db/pgxpool"
 	"reminder-app/db/riverclient"
 	"reminder-app/handler"
 
@@ -16,6 +16,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/riverqueue/river"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 // Module defines all fx options for the complete application
@@ -24,11 +25,11 @@ var Module = fx.Options(
 	config.Module,
 
 	// Database layer
-	db.Module,
+	pgxpool.Module,
+	gormmodule.Module,
 	riverclient.Module,
 
 	// Business logic layer
-	remindercontroller.Module,
 	controller.Module,
 
 	// Presentation layer
@@ -47,7 +48,7 @@ func main() {
 		Module,
 		fx.Invoke(func(
 			cfg *config.Config,
-			dbConnections *db.Connections,
+			gormDB *gorm.DB,
 			riverClient *river.Client[pgx.Tx],
 			httpHandler *handler.Handler,
 			lc fx.Lifecycle,
@@ -81,8 +82,10 @@ func main() {
 					}
 
 					// Close database connections
-					if dbConnections != nil {
-						dbConnections.Close()
+					if gormDB != nil {
+						if sqlDB, err := gormDB.DB(); err == nil {
+							sqlDB.Close()
+						}
 					}
 
 					fmt.Println("Application shut down complete")

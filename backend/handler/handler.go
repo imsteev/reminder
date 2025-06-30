@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/fx"
 )
 
 type Handler struct {
@@ -14,9 +15,19 @@ type Handler struct {
 	app *controller.App
 }
 
+type Params struct {
+	fx.In
+
+	App *controller.App
+}
+
 var _ http.Handler = (*Handler)(nil)
 
-func New(app *controller.App) *Handler {
+func New(p Params) *Handler {
+	return newHandler(p.App)
+}
+
+func newHandler(app *controller.App) *Handler {
 	api := gin.Default()
 	h := &Handler{
 		Engine: api,

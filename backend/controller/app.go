@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
@@ -16,11 +17,19 @@ type App struct {
 	reminderController *remindercontroller.Controller
 }
 
-func NewApp(db *gorm.DB, riverClient *river.Client[pgx.Tx], reminderController *remindercontroller.Controller) *App {
+type Params struct {
+	fx.In
+
+	DB                 *gorm.DB
+	River              *river.Client[pgx.Tx]
+	ReminderController *remindercontroller.Controller
+}
+
+func New(p Params) *App {
 	return &App{
-		db:                 db,
-		river:              riverClient,
-		reminderController: reminderController,
+		db:                 p.DB,
+		river:              p.River,
+		reminderController: p.ReminderController,
 	}
 }
 

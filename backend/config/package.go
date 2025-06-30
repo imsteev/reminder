@@ -6,8 +6,8 @@ import (
 	"github.com/samber/do/v2"
 )
 
-// NewConfig creates a new configuration instance
-func NewConfig(i do.Injector) (*Config, error) {
+// NewConfig creates a new configuration instance (clean constructor)
+func NewConfig() *Config {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		dbURL = "postgres://localhost/reminder?sslmode=disable"
@@ -21,10 +21,15 @@ func NewConfig(i do.Injector) (*Config, error) {
 	return &Config{
 		DatabaseURL: dbURL,
 		Port:        port,
-	}, nil
+	}
+}
+
+// newConfigDI is a wrapper for DI that calls the clean constructor
+func newConfigDI(i do.Injector) (*Config, error) {
+	return NewConfig(), nil
 }
 
 // Package defines the config dependency injection package
 var Package = do.Package(
-	do.Lazy(NewConfig),
+	do.Lazy(newConfigDI),
 )

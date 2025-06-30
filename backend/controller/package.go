@@ -7,10 +7,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
 	"github.com/samber/do/v2"
+	"gorm.io/gorm"
 )
 
-// NewAppDI creates the main application controller with dependency injection
-func NewAppDI(i do.Injector) (*App, error) {
+// NewAppController creates the main application controller (clean constructor)
+func NewAppController(gormDB *gorm.DB, riverClient *river.Client[pgx.Tx], reminderController *remindercontroller.Controller) *App {
+	return NewApp(gormDB, riverClient, reminderController)
+}
+
+// newAppDI is a wrapper for DI that calls the clean constructor
+func newAppDI(i do.Injector) (*App, error) {
 	dbConnections, err := do.Invoke[*db.Connections](i)
 	if err != nil {
 		return nil, err
@@ -26,10 +32,10 @@ func NewAppDI(i do.Injector) (*App, error) {
 		return nil, err
 	}
 
-	return NewApp(dbConnections.GORM, riverClient, reminderController), nil
+	return NewAppController(dbConnections.GORM, riverClient, reminderController), nil
 }
 
 // Package defines the app controller dependency injection package
 var Package = do.Package(
-	do.Lazy(NewAppDI),
+	do.Lazy(newAppDI),
 )

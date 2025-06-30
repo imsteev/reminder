@@ -57,7 +57,7 @@ func Up202412291545(tx *gorm.DB) error {
 
 	// Always ensure test user exists with ID 1
 	testUser := &models.User{
-		Model: gorm.Model{
+		BaseModel: models.BaseModel{
 			ID: 1,
 		},
 		Name: "Test User",

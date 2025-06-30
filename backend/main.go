@@ -19,11 +19,11 @@ import (
 
 func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
 	fmt.Println("Starting River background job client...")
-	
+
 	if err := riverClient.Start(context.Background()); err != nil {
 		log.Fatalf("Failed to start River client: %v", err)
 	}
-	
+
 	fmt.Println("River client started successfully")
 }
 

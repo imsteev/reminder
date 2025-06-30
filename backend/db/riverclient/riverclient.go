@@ -1,7 +1,6 @@
 package riverclient
 
 import (
-	"context"
 	"fmt"
 	"reminder-app/jobs"
 
@@ -25,14 +24,10 @@ func New(p Params) (*river.Client[pgx.Tx], error) {
 		},
 		Workers: jobs.NewWorkers(),
 	}
-	
+
 	riverClient, err := river.NewClient(riverpgxv5.New(p.PGXPool), config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create river client: %w", err)
-	}
-
-	if err := riverClient.Start(context.Background()); err != nil {
-		return nil, fmt.Errorf("failed to start river client: %w", err)
 	}
 
 	return riverClient, nil

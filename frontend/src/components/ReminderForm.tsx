@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Field, Input, Select, Textarea } from "./ui";
+import { Button, Field, Input, Textarea } from "./ui";
 import { createReminder } from "../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -12,15 +12,15 @@ import {
   DEFAULT_USER_ID,
   DEFAULT_START_DELAY_MINUTES,
   TIME_PRESETS,
-  FORM_DEFAULTS,
   UI_TEXT,
 } from "../constants";
 
 interface ReminderFormData {
   message?: string;
-  phoneNumber?: string;
-  cadenceType?: "frequency" | "interval";
-  frequency?: number;
+  contactValue?: string;
+  reminderType?: "one-time" | "repeating";
+  deliveryType?: "sms" | "email";
+  intervalDays?: number;
   intervalHours?: number;
   intervalMinutes?: number;
   startTime?: string;
@@ -40,11 +40,13 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
     formState: {},
   } = useForm<ReminderFormData>({
     defaultValues: {
-      cadenceType: "frequency",
+      reminderType: "repeating",
+      deliveryType: "sms",
     },
   });
 
-  const cadenceType = watch("cadenceType");
+  const reminderType = watch("reminderType");
+  const deliveryType = watch("deliveryType");
 
   const createMutation = useMutation({
     mutationFn: createReminder,
@@ -72,31 +74,25 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
   }, []);
 
   const onSubmit = (data: ReminderFormData) => {
-    let frequency = 1;
-    let intervalHours = 1;
+    const isOneTime = data.reminderType === "one-time";
 
-    if (data.cadenceType === "frequency") {
-      frequency = data.frequency || 1;
-      intervalHours = 24 / frequency;
-    } else if (data.cadenceType === "interval") {
-      if (data.intervalMinutes) {
-        intervalHours = data.intervalMinutes / 60;
-        frequency = Math.ceil(24 / intervalHours);
-      } else {
-        intervalHours = data.intervalHours || 1;
-        frequency = Math.ceil(24 / intervalHours);
-      }
+    let periodMinutes = 0;
+    if (!isOneTime) {
+      const days = data.intervalDays || 0;
+      const hours = data.intervalHours || 0;
+      const minutes = data.intervalMinutes || 0;
+      periodMinutes = days * 24 * 60 + hours * 60 + minutes;
     }
 
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
       message: data.message || "",
-      phone_number: data.phoneNumber || "",
-      frequency,
-      interval_hours: intervalHours,
       start_time: data.startTime
         ? new Date(data.startTime).toISOString()
         : new Date().toISOString(),
+      type: data.reminderType || "repeating",
+      period_minutes: periodMinutes,
+      delivery_type: data.deliveryType || "sms",
     });
   };
 
@@ -119,89 +115,137 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       </Field.Root>
 
       <Field.Root>
-        <Field.Label>Phone Number</Field.Label>
+        <Field.Label>Delivery Method</Field.Label>
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="sms"
+              {...register("deliveryType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm">SMS</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="email"
+              {...register("deliveryType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm">Email</span>
+          </label>
+        </div>
+      </Field.Root>
+
+      <Field.Root>
+        <Field.Label>
+          {deliveryType === "sms" ? "Phone Number" : "Email Address"}
+        </Field.Label>
         <Field.Control
           render={
             <Input
-              type="tel"
-              {...register("phoneNumber")}
-              placeholder={UI_TEXT.PHONE_PLACEHOLDER}
+              type={deliveryType === "sms" ? "tel" : "email"}
+              {...register("contactValue")}
+              placeholder={
+                deliveryType === "sms"
+                  ? UI_TEXT.PHONE_PLACEHOLDER
+                  : "user@example.com"
+              }
             />
           }
         />
       </Field.Root>
 
-      <div className="space-y-4">
-        <Field.Root>
-          <Field.Label>Every</Field.Label>
-          <Field.Control
-            render={
-              <Select {...register("cadenceType")}>
-                <option value="day">day</option>
-                <option value="hour">hour</option>
-                <option value="minute">minute</option>
-              </Select>
-            }
-          />
-        </Field.Root>
-
-        {cadenceType === "frequency" && (
-          <Field.Root>
-            <Field.Label>Times per day</Field.Label>
-            <Field.Control
-              render={
-                <Input
-                  type="number"
-                  {...register("frequency", {
-                    min: 1,
-                    valueAsNumber: true,
-                  })}
-                  placeholder={FORM_DEFAULTS.FREQUENCY_PLACEHOLDER}
-                  min={FORM_DEFAULTS.MIN_FREQUENCY}
-                />
-              }
+      <Field.Root>
+        <Field.Label>Reminder Type</Field.Label>
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="one-time"
+              {...register("reminderType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
             />
-          </Field.Root>
-        )}
+            <span className="text-sm">One-time</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="repeating"
+              {...register("reminderType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm">Repeating</span>
+          </label>
+        </div>
+      </Field.Root>
 
-        {cadenceType === "interval" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field.Root>
-              <Field.Label>Every X hours</Field.Label>
-              <Field.Control
-                render={
-                  <Input
-                    type="number"
-                    {...register("intervalHours", {
-                      min: 1,
-                      valueAsNumber: true,
-                    })}
-                    placeholder={FORM_DEFAULTS.INTERVAL_PLACEHOLDER}
-                    min={FORM_DEFAULTS.MIN_INTERVAL}
-                  />
-                }
-              />
-            </Field.Root>
+      {reminderType === "repeating" && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Interval
+            </label>
+            <div className="grid grid-cols-3 gap-4">
+              <Field.Root>
+                <Field.Control
+                  render={
+                    <Input
+                      type="number"
+                      {...register("intervalDays", {
+                        min: 0,
+                        valueAsNumber: true,
+                      })}
+                      placeholder="0"
+                      min={0}
+                    />
+                  }
+                />
+                <Field.Description>Days</Field.Description>
+              </Field.Root>
 
-            <Field.Root>
-              <Field.Label>OR every X minutes</Field.Label>
-              <Field.Control
-                render={
-                  <Input
-                    type="number"
-                    {...register("intervalMinutes", {
-                      min: 1,
-                      valueAsNumber: true,
-                    })}
-                    placeholder="30"
-                    min={1}
-                  />
-                }
-              />
-            </Field.Root>
+              <Field.Root>
+                <Field.Control
+                  render={
+                    <Input
+                      type="number"
+                      {...register("intervalHours", {
+                        min: 0,
+                        max: 23,
+                        valueAsNumber: true,
+                      })}
+                      placeholder="0"
+                      min={0}
+                      max={23}
+                    />
+                  }
+                />
+                <Field.Description>Hours</Field.Description>
+              </Field.Root>
+
+              <Field.Root>
+                <Field.Control
+                  render={
+                    <Input
+                      type="number"
+                      {...register("intervalMinutes", {
+                        min: 0,
+                        max: 59,
+                        valueAsNumber: true,
+                      })}
+                      placeholder="0"
+                      min={0}
+                      max={59}
+                    />
+                  }
+                />
+                <Field.Description>Minutes</Field.Description>
+              </Field.Root>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div>
         <label
@@ -211,11 +255,16 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
           {UI_TEXT.START_TIME_LABEL}
         </label>
 
+        {/* Custom Time Input */}
+        <Field.Root>
+          <Field.Description>{UI_TEXT.CUSTOM_TIME_LABEL}</Field.Description>
+          <Field.Control
+            render={<Input type="datetime-local" {...register("startTime")} />}
+          />
+        </Field.Root>
+
         {/* Quick Time Buttons */}
-        <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-2">
-            {UI_TEXT.QUICK_SELECT_LABEL}
-          </p>
+        <div className="mt-3">
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
@@ -251,7 +300,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute
+                  TIME_PRESETS.TOMORROW_9AM.minute,
                 )
               }
               className="rounded-full"
@@ -265,7 +314,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_1PM.hour,
-                  TIME_PRESETS.TOMORROW_1PM.minute
+                  TIME_PRESETS.TOMORROW_1PM.minute,
                 )
               }
               className="rounded-full"
@@ -274,14 +323,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             </Button>
           </div>
         </div>
-
-        {/* Custom Time Input */}
-        <Field.Root>
-          <Field.Description>{UI_TEXT.CUSTOM_TIME_LABEL}</Field.Description>
-          <Field.Control
-            render={<Input type="datetime-local" {...register("startTime")} />}
-          />
-        </Field.Root>
       </div>
 
       <Button

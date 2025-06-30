@@ -2,7 +2,7 @@
 export const API_BASE_URL = "http://localhost:8080";
 
 // User Configuration
-export const DEFAULT_USER_ID = "default-user";
+export const DEFAULT_USER_ID = 1;
 
 // Time Configuration
 export const DEFAULT_START_DELAY_MINUTES = 5;
@@ -28,7 +28,7 @@ export const FORM_DEFAULTS = {
 export const UI_TEXT = {
   START_TIME_LABEL: "When should we start sending reminders?",
   QUICK_SELECT_LABEL: "Quick select:",
-  CUSTOM_TIME_LABEL: "Or pick a specific time:",
+  CUSTOM_TIME_LABEL: "Date (local time)",
   PHONE_PLACEHOLDER: "+1234567890",
   MESSAGE_PLACEHOLDER: "Take your medication",
 } as const;

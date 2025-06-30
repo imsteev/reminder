@@ -15,13 +15,26 @@ backend-dev:
 backend-build:
     cd backend && go build -o bin/reminder main.go
 
-# Run backend tests
-backend-test:
-    cd backend && go test ./...
-
 # Install backend dependencies
 backend-deps:
     cd backend && go mod tidy
+
+# Run database migrations
+migrate:
+    cd backend && go run ./cmd/migrate up
+
+# Reset database (drop all tables and re-run migrations)
+migrate-reset:
+    psql ${DATABASE_URL:-postgres://localhost/reminder?sslmode=disable} -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
+    cd backend && go run ./cmd/migrate up
+
+# Generate a new migration file
+migrate-generate DESCRIPTION:
+    cd backend && go run ./cmd/generate-migration {{DESCRIPTION}}
+
+# Generate a new migration file (alternative syntax)
+migrate-new MIGRATION_NAME:
+    cd backend && go run ./cmd/generate-migration {{MIGRATION_NAME}}
 
 # Frontend Development  
 # --------------------
@@ -33,14 +46,6 @@ frontend-dev:
 # Build frontend for production
 frontend-build:
     cd frontend && pnpm run build
-
-# Run frontend linter
-frontend-lint:
-    cd frontend && pnpm run lint
-
-# Preview frontend production build
-frontend-preview:
-    cd frontend && pnpm run preview
 
 # Install frontend dependencies
 frontend-deps:

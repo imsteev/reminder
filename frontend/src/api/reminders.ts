@@ -5,28 +5,34 @@ const API_URL = `${API_BASE_URL}/api`;
 
 export interface Reminder {
   id: number;
-  user_id: string;
+  user_id: number;
   message: string;
-  phone_number: string;
-  frequency: number;
-  interval_hours: number;
   start_time: string;
-  end_time?: string;
-  is_active: boolean;
+  type: "one-time" | "repeating";
+  period_minutes: number;
+  delivery_type: "sms" | "email";
   created_at: string;
   updated_at: string;
+  deleted_at?: string;
 }
 
 export interface CreateReminderRequest {
-  user_id: string;
+  user_id: number;
   message: string;
-  phone_number: string;
-  frequency: number;
-  interval_hours: number;
   start_time: string;
+  type: "one-time" | "repeating";
+  period_minutes: number;
+  delivery_type: "sms" | "email";
 }
 
-export const getReminders = async (userId: string): Promise<Reminder[]> => {
+export interface ContactMethod {
+  user_id: number;
+  type: "phone" | "email";
+  value: string;
+  description: string;
+}
+
+export const getReminders = async (userId: number): Promise<Reminder[]> => {
   const response = await axios.get(`${API_URL}/reminders?user_id=${userId}`);
   return response.data;
 };

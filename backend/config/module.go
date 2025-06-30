@@ -1,13 +1,20 @@
 package config
 
 import (
+	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"go.uber.org/fx"
 )
 
 // NewConfig creates a new configuration instance (clean constructor)
 func NewConfig() *Config {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("Error loading .env file:", err)
+	}
+
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		dbURL = "postgres://localhost/reminder?sslmode=disable"

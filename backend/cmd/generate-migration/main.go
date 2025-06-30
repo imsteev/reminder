@@ -12,7 +12,6 @@ import (
 
 	"reminder-app/config"
 
-	"github.com/joho/godotenv"
 	"go.uber.org/fx"
 )
 
@@ -84,11 +83,6 @@ func (mg *MigrationGenerator) Generate(description string) error {
 }
 
 func main() {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file:", err)
-	}
-
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run cmd/generate-migration/main.go <description>")
 		fmt.Println("Example: go run cmd/generate-migration/main.go AddUserPreferences")

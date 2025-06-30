@@ -12,7 +12,6 @@ import (
 	"reminder-app/handler"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/joho/godotenv"
 	"github.com/riverqueue/river"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
@@ -47,7 +46,7 @@ func StartReminderService(
 	}
 
 	fmt.Printf("Starting reminder service on port %s\n", cfg.Port)
-	
+
 	// Start the server (this will block)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("HTTP server error: %v", err)
@@ -57,16 +56,11 @@ func StartReminderService(
 // API: handler -> app -> sub-controllers -> db
 // Async: riverclient -> db <- workers
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file:", err)
-	}
 
-	// Create fx app with all modules and lifecycle
 	fxApp := fx.New(
 		Module,
 		fx.Invoke(StartReminderService),
 	)
 
-	// Start the fx app (blocks until stopped)
 	fxApp.Run()
 }

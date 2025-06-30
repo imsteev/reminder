@@ -10,17 +10,11 @@ import (
 	gormmodule "reminder-app/db/gorm"
 	"reminder-app/db/migrate"
 
-	"github.com/joho/godotenv"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
 func main() {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file:", err)
-	}
-
 	// Parse command line arguments
 	if len(os.Args) < 2 {
 		printUsage()

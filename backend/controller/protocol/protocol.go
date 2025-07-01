@@ -45,3 +45,31 @@ type UpdateContactMethodRequest struct {
 	Value       string `json:"value"`
 	Description string `json:"description"`
 }
+
+type UpdateReminderRequest struct {
+	UserID          int64     `json:"user_id"`
+	Body            string    `json:"body"`
+	StartTime       time.Time `json:"start_time"`
+	IsRepeating     bool      `json:"is_repeating"`
+	PeriodMinutes   int64     `json:"period_minutes"`
+	ContactMethodID int64     `json:"contact_method_id"`
+	PhoneNumber     *string   `json:"phone_number"`
+	Email           *string   `json:"email"`
+}
+
+type DeleteResponse struct {
+	Message string `json:"message"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
+}
+
+type GetRemindersQuery struct {
+	UserID      int64 `json:"user_id" form:"user_id" binding:"required"`
+	IncludePast bool  `json:"include_past" form:"include_past"`
+}
+
+type GetContactMethodsQuery struct {
+	UserID int64 `json:"user_id" form:"user_id" binding:"required"`
+}

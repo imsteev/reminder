@@ -42,7 +42,7 @@ func (cc *Controller) GetContactMethods(userID int64) ([]protocol.ContactMethod,
 	return protocolContactMethods, nil
 }
 
-func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactMethodRequest) (*models.ContactMethod, error) {
+func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactMethodRequest) (*protocol.ContactMethod, error) {
 	dbContactMethod := &models.ContactMethod{
 		UserID:      contactMethod.UserID,
 		Type:        contactMethod.Type,
@@ -55,16 +55,38 @@ func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactM
 		return nil, err
 	}
 
-	return dbContactMethod, nil
+	return &protocol.ContactMethod{
+		ID:          int64(dbContactMethod.ID),
+		UserID:      dbContactMethod.UserID,
+		Type:        dbContactMethod.Type,
+		Value:       dbContactMethod.Value,
+		Description: dbContactMethod.Description,
+	}, nil
 }
 
-func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.UpdateContactMethodRequest) error {
-	err := cc.db.Model(&models.ContactMethod{}).Where("id = ?", id).Updates(map[string]interface{}{
-		"type":        contactMethod.Type,
-		"value":       contactMethod.Value,
-		"description": contactMethod.Description,
-	}).Error
-	return err
+func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.UpdateContactMethodRequest) (*protocol.ContactMethod, error) {
+	var dbContactMethod models.ContactMethod
+	if err := cc.db.Where("id = ?", id).First(&dbContactMethod).Error; err != nil {
+		return nil, err
+	}
+
+	// Update fields from request
+	dbContactMethod.Type = contactMethod.Type
+	dbContactMethod.Value = contactMethod.Value
+	dbContactMethod.Description = contactMethod.Description
+
+	err := cc.db.Save(&dbContactMethod).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &protocol.ContactMethod{
+		ID:          int64(dbContactMethod.ID),
+		UserID:      dbContactMethod.UserID,
+		Type:        dbContactMethod.Type,
+		Value:       dbContactMethod.Value,
+		Description: dbContactMethod.Description,
+	}, nil
 }
 
 func (cc *Controller) DeleteContactMethod(id int64) error {

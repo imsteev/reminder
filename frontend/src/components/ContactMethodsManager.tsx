@@ -6,12 +6,13 @@ import {
   createContactMethod,
   updateContactMethod,
   deleteContactMethod,
-  ContactMethod,
-  CreateContactMethodRequest,
-  UpdateContactMethodRequest,
+  type ContactMethod,
+  type CreateContactMethodRequest,
+  type UpdateContactMethodRequest,
 } from "../api/reminders";
 import { DEFAULT_USER_ID } from "../constants";
 import ContactMethodCard from "./ContactMethodCard";
+import ContactMethodForm from "./ContactMethodForm";
 
 interface ContactMethodsManagerProps {
   userId?: number;
@@ -22,32 +23,14 @@ export default function ContactMethodsManager({
 }: ContactMethodsManagerProps) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newMethod, setNewMethod] = useState<CreateContactMethodRequest>({
-    user_id: userId,
-    type: "email",
-    value: "",
-    description: "",
-  });
 
-  const queryClient = useQueryClient();
-
-  const { data: contactMethods = [], isLoading } = useQuery({
+  const {
+    data: contactMethods = [],
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["contactMethods", userId],
-    queryFn: () => getContactMethods(userId),
-  });
-
-  const createMutation = useMutation({
-    mutationFn: createContactMethod,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contactMethods", userId] });
-      setShowAddForm(false);
-      setNewMethod({
-        user_id: userId,
-        type: "email",
-        value: "",
-        description: "",
-      });
-    },
+    queryFn: () => getContactMethods({ user_id: userId }),
   });
 
   const updateMutation = useMutation({
@@ -59,7 +42,7 @@ export default function ContactMethodsManager({
       data: UpdateContactMethodRequest;
     }) => updateContactMethod(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contactMethods", userId] });
+      refetch();
       setEditingId(null);
     },
   });
@@ -67,24 +50,9 @@ export default function ContactMethodsManager({
   const deleteMutation = useMutation({
     mutationFn: deleteContactMethod,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contactMethods", userId] });
+      refetch();
     },
   });
-
-  const handleCreate = () => {
-    createMutation.mutate(newMethod);
-  };
-
-  const handleUpdate = (id: number, method: ContactMethod) => {
-    updateMutation.mutate({
-      id,
-      data: {
-        type: method.type,
-        value: method.value,
-        description: method.description,
-      },
-    });
-  };
 
   const handleDelete = (id: number) => {
     if (
@@ -115,78 +83,10 @@ export default function ContactMethodsManager({
         </div>
 
         {showAddForm && (
-          <Card>
-            <CardContent className="space-y-4">
-              <h3 className="font-medium">Add New Contact Method</h3>
-
-              <div className="flex gap-3">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    checked={newMethod.type === "email"}
-                    onChange={() =>
-                      setNewMethod({ ...newMethod, type: "email" })
-                    }
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="text-sm">Email</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    checked={newMethod.type === "phone"}
-                    onChange={() =>
-                      setNewMethod({ ...newMethod, type: "phone" })
-                    }
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <span className="text-sm">Phone</span>
-                </label>
-              </div>
-
-              {newMethod.type === "phone" && (
-                <PhoneInput
-                  value={newMethod.value}
-                  onChange={(value) => setNewMethod({ ...newMethod, value })}
-                />
-              )}
-
-              {newMethod.type === "email" && (
-                <Input
-                  value={newMethod.value}
-                  onChange={(e) =>
-                    setNewMethod({ ...newMethod, value: e.target.value })
-                  }
-                />
-              )}
-
-              <Input
-                value={newMethod.description}
-                onChange={(e) =>
-                  setNewMethod({ ...newMethod, description: e.target.value })
-                }
-                placeholder="Description (e.g., Personal email, Work phone)"
-              />
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCreate}
-                  disabled={createMutation.isPending || !newMethod.value}
-                  className="bg-green-600 text-white hover:bg-green-700"
-                  size="sm"
-                >
-                  {createMutation.isPending ? "Creating..." : "Create"}
-                </Button>
-                <Button
-                  onClick={() => setShowAddForm(false)}
-                  variant="ghost"
-                  size="sm"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <ContactMethodForm
+            onCancel={() => setShowAddForm(false)}
+            onSuccess={() => refetch()}
+          />
         )}
 
         <div className="space-y-3">
@@ -196,7 +96,12 @@ export default function ContactMethodsManager({
               method={method}
               isEditing={editingId === method.id}
               onEdit={() => setEditingId(method.id)}
-              onSave={(updatedMethod) => handleUpdate(method.id, updatedMethod)}
+              onSave={(updatedMethod) =>
+                updateMutation.mutate({
+                  id: method.id,
+                  data: updatedMethod,
+                })
+              }
               onCancel={() => setEditingId(null)}
               onDelete={() => handleDelete(method.id)}
               isUpdating={updateMutation.isPending}

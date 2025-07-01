@@ -5,7 +5,6 @@ import (
 	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/protocol"
 	"reminder-app/controller/remindercontroller"
-	"reminder-app/models"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -66,24 +65,15 @@ func (h *Handler) init() *Handler {
 }
 
 func (h *Handler) handleGetReminders(c *gin.Context) {
-	userIDStr := c.Query("user_id")
-	if userIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id is required"})
+	var query protocol.GetRemindersQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	reminders, err := h.reminderController.GetReminders(query.UserID, query.IncludePast)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
-		return
-	}
-
-	includePastStr := c.Query("include_past")
-	includePast := includePastStr == "true"
-
-	reminders, err := h.reminderController.GetReminders(userID, includePast)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -93,13 +83,13 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 func (h *Handler) handleCreateReminder(c *gin.Context) {
 	var reminder protocol.CreateReminderRequest
 	if err := c.ShouldBindJSON(&reminder); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	savedReminder, err := h.reminderController.CreateReminder(&reminder)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -110,57 +100,51 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid reminder id"})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: "invalid reminder id"})
 		return
 	}
 
-	var reminder models.Reminder
+	var reminder protocol.UpdateReminderRequest
 	if err := c.ShouldBindJSON(&reminder); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	reminder.BaseModel.ID = uint(id)
-	if err := h.reminderController.UpdateReminder(id, &reminder); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	updatedReminder, err := h.reminderController.UpdateReminder(id, &reminder)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, reminder)
+	c.JSON(http.StatusOK, updatedReminder)
 }
 
 func (h *Handler) handleDeleteReminder(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid reminder id"})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: "invalid reminder id"})
 		return
 	}
 
 	if err := h.reminderController.DeleteReminder(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "reminder deleted successfully"})
+	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "reminder deleted successfully"})
 }
 
 func (h *Handler) handleGetContactMethods(c *gin.Context) {
-	userIDStr := c.Query("user_id")
-	if userIDStr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id is required"})
+	var query protocol.GetContactMethodsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	contactMethods, err := h.contactMethodController.GetContactMethods(query.UserID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
-		return
-	}
-
-	contactMethods, err := h.contactMethodController.GetContactMethods(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -170,13 +154,13 @@ func (h *Handler) handleGetContactMethods(c *gin.Context) {
 func (h *Handler) handleCreateContactMethod(c *gin.Context) {
 	var contactMethod protocol.CreateContactMethodRequest
 	if err := c.ShouldBindJSON(&contactMethod); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
 	savedContactMethod, err := h.contactMethodController.CreateContactMethod(&contactMethod)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
@@ -187,36 +171,37 @@ func (h *Handler) handleUpdateContactMethod(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid contact method id"})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: "invalid contact method id"})
 		return
 	}
 
 	var contactMethod protocol.UpdateContactMethodRequest
 	if err := c.ShouldBindJSON(&contactMethod); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	if err := h.contactMethodController.UpdateContactMethod(id, &contactMethod); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	updatedContactMethod, err := h.contactMethodController.UpdateContactMethod(id, &contactMethod)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "contact method updated successfully"})
+	c.JSON(http.StatusOK, updatedContactMethod)
 }
 
 func (h *Handler) handleDeleteContactMethod(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid contact method id"})
+		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: "invalid contact method id"})
 		return
 	}
 
 	if err := h.contactMethodController.DeleteContactMethod(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "contact method deleted successfully"})
+	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "contact method deleted successfully"})
 }

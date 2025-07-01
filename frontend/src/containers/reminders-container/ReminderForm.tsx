@@ -71,7 +71,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
 
   const { data: contactMethods = [] } = useQuery({
     queryKey: ["contactMethods", DEFAULT_USER_ID],
-    queryFn: () => getContactMethods(DEFAULT_USER_ID),
+    queryFn: () => getContactMethods({ user_id: DEFAULT_USER_ID }),
   });
 
   const createContactMethodMutation = useMutation({

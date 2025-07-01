@@ -1,7 +1,7 @@
 import React from "react";
 import { format } from "date-fns";
 import { Button, Card, CardContent } from "../../components/ui";
-import { Reminder } from "../../api/reminders";
+import { type Reminder } from "../../api/reminders";
 import { cn } from "../../utils/cn";
 
 interface ReminderCardProps {
@@ -38,8 +38,7 @@ export default function ReminderCard({
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs text-gray-500">#{reminder.id}</span>
               <p className={cn("font-medium")}>
-                {reminder.name ||
-                  reminder.body?.slice(0, 30) +
+                {reminder.body?.slice(0, 30) +
                     (reminder.body?.length > 30 ? "..." : "") ||
                   "-"}
               </p>

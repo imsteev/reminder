@@ -1,0 +1,12 @@
+packages:
+  - path: "reminder-app/models"
+    type_mappings:
+      time.Time: "string"
+      gorm.DeletedAt: "string | null"
+      "*string": "string | null"
+    output_path: "../frontend/src/types/models.ts"
+  - path: "reminder-app/controller/protocol"
+    type_mappings:
+      time.Time: "string"
+      "*string": "string | null"
+    output_path: "../frontend/src/types/protocol.ts"

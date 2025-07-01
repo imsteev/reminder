@@ -1,10 +1,10 @@
 import { differenceInMinutes, isBefore, formatDistanceToNow } from "date-fns";
-import { Reminder } from "../../../api/reminders";
+import { type Reminder } from "../../../api/reminders";
 
 export const getNextOccurrence = (reminder: Reminder, currentTime: Date) => {
   const startTime = new Date(reminder.start_time);
 
-  if (reminder.type === "one-time") {
+  if (!reminder.is_repeating) {
     return startTime;
   }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "../../components/ui";
-import { deleteReminder, Reminder } from "../../api/reminders";
+import { deleteReminder, type Reminder } from "../../api/reminders";
 import Timeline from "./timeline/Timeline";
 import { getNextOccurrence } from "./timeline/utils";
 

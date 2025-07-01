@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Reminder } from "../../../api/reminders";
+import { type Reminder } from "../../../api/reminders";
 import ReminderCard from "../ReminderCard";
 import { getNextOccurrence, getTimelinePosition } from "./utils";
 import {
@@ -41,7 +41,6 @@ export default function Timeline({
     const minutes = totalMinutes % 60;
 
     return {
-      name: reminder.name || "",
       body: reminder.body || "",
       reminderType: reminder.is_repeating ? "repeating" as const : "one-time" as const,
       contactMethodID: reminder.contact_method_id,

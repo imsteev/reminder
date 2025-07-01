@@ -61,7 +61,7 @@ func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.R
 	return protocolReminders, err
 }
 
-func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (*models.Reminder, error) {
+func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (*protocol.Reminder, error) {
 
 	var contactMethod models.ContactMethod
 	err := rc.db.Where("user_id = ? and id = ?", reminder.UserID, reminder.ContactMethodID).First(&contactMethod).Error
@@ -127,12 +127,45 @@ func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (
 		return nil, err
 	}
 
-	return dbReminder, nil
+	return &protocol.Reminder{
+		ID:              int64(dbReminder.ID),
+		UserID:          dbReminder.UserID,
+		Body:            dbReminder.Body,
+		StartTime:       dbReminder.StartTime,
+		IsRepeating:     dbReminder.IsRepeating,
+		PeriodMinutes:   dbReminder.PeriodMinutes,
+		ContactMethodID: dbReminder.ContactMethodID,
+	}, nil
 }
 
-func (rc *Controller) UpdateReminder(id int64, reminder *models.Reminder) error {
-	err := rc.db.Model(&models.Reminder{}).Where("id = ?", id).Updates(reminder).Error
-	return err
+func (rc *Controller) UpdateReminder(id int64, reminder *protocol.UpdateReminderRequest) (*protocol.Reminder, error) {
+	var dbReminder models.Reminder
+	if err := rc.db.Where("id = ?", id).First(&dbReminder).Error; err != nil {
+		return nil, err
+	}
+
+	// Update fields from request
+	dbReminder.UserID = reminder.UserID
+	dbReminder.Body = reminder.Body
+	dbReminder.StartTime = reminder.StartTime
+	dbReminder.IsRepeating = reminder.IsRepeating
+	dbReminder.PeriodMinutes = reminder.PeriodMinutes
+	dbReminder.ContactMethodID = reminder.ContactMethodID
+
+	err := rc.db.Save(&dbReminder).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &protocol.Reminder{
+		ID:              int64(dbReminder.ID),
+		UserID:          dbReminder.UserID,
+		Body:            dbReminder.Body,
+		StartTime:       dbReminder.StartTime,
+		IsRepeating:     dbReminder.IsRepeating,
+		PeriodMinutes:   dbReminder.PeriodMinutes,
+		ContactMethodID: dbReminder.ContactMethodID,
+	}, nil
 }
 
 func (rc *Controller) DeleteReminder(id int64) error {

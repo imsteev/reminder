@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { getReminders } from "../../api/reminders";
+import { getReminders, type GetRemindersQuery } from "../../api/reminders";
 import ReminderList from "./ReminderList";
 import { DEFAULT_USER_ID } from "../../constants";
 import NowMarker from "./timeline/NowMarker";
@@ -15,7 +15,7 @@ export default function RemindersContainer() {
     refetch,
   } = useQuery({
     queryKey: ["reminders", includePast],
-    queryFn: () => getReminders(DEFAULT_USER_ID, includePast),
+    queryFn: () => getReminders({ user_id: DEFAULT_USER_ID, include_past: includePast }),
   });
 
   return (

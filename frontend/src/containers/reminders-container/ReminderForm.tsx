@@ -217,6 +217,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                       placeholder="0"
                       min={0}
                       max={59}
+                      onFocus={(e) => e.target.select()}
                     />
                   }
                 />
@@ -236,6 +237,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                       placeholder="0"
                       min={0}
                       max={23}
+                      onFocus={(e) => e.target.select()}
                     />
                   }
                 />
@@ -253,6 +255,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                       })}
                       placeholder="0"
                       min={0}
+                      onFocus={(e) => e.target.select()}
                     />
                   }
                 />
@@ -316,7 +319,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute
+                  TIME_PRESETS.TOMORROW_9AM.minute,
                 )
               }
               className="rounded-full"

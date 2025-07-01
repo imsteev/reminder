@@ -5,12 +5,15 @@ A web application for managing recurring text message reminders, built with Go b
 ## Quick Start
 
 ### Prerequisites
+
 - Go 1.24+
 - PostgreSQL
 - Node.js 18+
 
 ### Setup
+
 1. Clone and configure:
+
    ```bash
    cp .env.example .env
    # Update .env with your database credentials
@@ -18,6 +21,7 @@ A web application for managing recurring text message reminders, built with Go b
    ```
 
 2. Run migrations and start backend:
+
    ```bash
    cd backend
    go run ./cmd/migrate up
@@ -47,6 +51,7 @@ go run ./cmd/generate-migration FeatureName
 ```
 
 To add a migration:
+
 1. Run `just migrate-new YourFeature` (uses embedded Go templates)
 2. Edit the generated file in `backend/db/migrate/`
 3. Add constructor to `db/migrate/migrator.go`
@@ -55,17 +60,17 @@ To add a migration:
 
 Configuration is managed using [go-envconfig](https://github.com/sethvargo/go-envconfig) with struct tags and defaults:
 
-| Environment Variable | Default | Description |
-|---------------------|---------|-------------|
-| `DATABASE_URL` | `postgres://localhost/reminder?sslmode=disable` | PostgreSQL connection string |
-| `PORT` | `8080` | HTTP server port |
+| Environment Variable | Default                                         | Description                  |
+| -------------------- | ----------------------------------------------- | ---------------------------- |
+| `DATABASE_URL`       | `postgres://localhost/reminder?sslmode=disable` | PostgreSQL connection string |
+| `PORT`               | `8080`                                          | HTTP server port             |
 
 You can override any setting by setting environment variables or updating your `.env` file.
 
 ## API
 
 - `GET /api/reminders?user_id={id}` - Get reminders
-- `POST /api/reminders` - Create reminder  
+- `POST /api/reminders` - Create reminder
 - `PUT /api/reminders/{id}` - Update reminder
 - `DELETE /api/reminders/{id}` - Delete reminder
 
@@ -73,3 +78,5 @@ You can override any setting by setting environment variables or updating your `
 
 **Backend:** Go, Gin, PostgreSQL, GORM, River (background jobs)  
 **Frontend:** React, TypeScript, Tailwind CSS, React Query
+
+DATABASE_URL=postgres://stephenchung@host.docker.internal:5432/reminder?sslmode=disable

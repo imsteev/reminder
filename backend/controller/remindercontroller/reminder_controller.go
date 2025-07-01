@@ -57,7 +57,7 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) (*models.Reminde
 			ScheduledAt: reminder.StartTime,
 		}
 		job := river.NewPeriodicJob(
-			river.PeriodicInterval(time.Duration(reminder.PeriodMinutes)),
+			river.PeriodicInterval(time.Duration(reminder.PeriodMinutes)*time.Minute),
 			func() (river.JobArgs, *river.InsertOpts) { return args, opts },
 			nil,
 		)

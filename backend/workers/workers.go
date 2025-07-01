@@ -8,13 +8,24 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
+	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
-func New() *river.Workers {
+type Params struct {
+	fx.In
+
+	DB *gorm.DB
+}
+
+func New(p Params) *river.Workers {
 	workers := river.NewWorkers()
-	river.AddWorker(workers, &PeriodicReminderJobWorker{})
-	river.AddWorker(workers, &OneTimeReminderJobWorker{})
+	river.AddWorker(workers, &PeriodicReminderJobWorker{
+		GormDB: p.DB,
+	})
+	river.AddWorker(workers, &OneTimeReminderJobWorker{
+		GormDB: p.DB,
+	})
 	return workers
 }
 

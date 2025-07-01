@@ -35,12 +35,12 @@ func New(p Params) *Controller {
 func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.Reminder, error) {
 	var dbReminders []models.Reminder
 	query := rc.db.Where("user_id = ?", userID)
-	
+
 	if !includePast {
 		// For one-time reminders, exclude past ones. For repeating, always include
-		query = query.Where("type = 'repeating' OR (type = 'one-time' AND start_time > ?)", time.Now())
+		query = query.Where("is_repeating OR (start_time > ?)", time.Now())
 	}
-	
+
 	err := query.Order("start_time").Find(&dbReminders).Error
 	if err != nil {
 		return nil, err
@@ -49,40 +49,45 @@ func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.R
 	var protocolReminders []protocol.Reminder
 	for _, dbReminder := range dbReminders {
 		protocolReminders = append(protocolReminders, protocol.Reminder{
-			ID:            int64(dbReminder.ID),
-			UserID:        dbReminder.UserID,
-			Message:       dbReminder.Message,
-			StartTime:     dbReminder.StartTime,
-			Type:          dbReminder.Type,
-			PeriodMinutes: dbReminder.PeriodMinutes,
-			DeliveryType:  dbReminder.DeliveryType,
+			ID:              int64(dbReminder.ID),
+			UserID:          dbReminder.UserID,
+			Body:            dbReminder.Body,
+			StartTime:       dbReminder.StartTime,
+			IsRepeating:     dbReminder.IsRepeating,
+			PeriodMinutes:   dbReminder.PeriodMinutes,
+			ContactMethodID: dbReminder.ContactMethodID,
 		})
 	}
 	return protocolReminders, err
 }
 
 func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (*models.Reminder, error) {
-	dbReminder := &models.Reminder{
-		UserID:        reminder.UserID,
-		Message:       reminder.Message,
-		StartTime:     reminder.StartTime,
-		Type:          reminder.Type,
-		PeriodMinutes: reminder.PeriodMinutes,
-		DeliveryType:  reminder.DeliveryType,
+
+	var contactMethod models.ContactMethod
+	err := rc.db.Where("user_id = ? and id = ?", reminder.UserID, reminder.ContactMethodID).First(&contactMethod).Error
+	if err != nil {
+		return nil, errors.New("contact method not found")
 	}
 
-	err := rc.db.Create(dbReminder).Error
+	dbReminder := &models.Reminder{
+		UserID:          reminder.UserID,
+		Body:            reminder.Body,
+		StartTime:       reminder.StartTime,
+		IsRepeating:     reminder.IsRepeating,
+		PeriodMinutes:   reminder.PeriodMinutes,
+		ContactMethodID: reminder.ContactMethodID,
+	}
+
+	err = rc.db.Create(dbReminder).Error
 	if err != nil {
 		return nil, err
 	}
 
-	isRepeating := reminder.Type == "repeating"
-
-	if isRepeating && reminder.PeriodMinutes <= 0 {
+	if reminder.IsRepeating && reminder.PeriodMinutes <= 0 {
 		return nil, errors.New("period minutes must be greater than 0")
 	}
 
-	if isRepeating {
+	if reminder.IsRepeating {
 		args := workers.ReminderJobArgs{
 			ReminderID: int(dbReminder.ID),
 		}
@@ -99,7 +104,7 @@ func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (
 		handle := rc.riverClient.PeriodicJobs().Add(job)
 
 		fmt.Println("🔄 ADDED PERIODIC JOB", handle)
-		dbReminder.JobID = int(handle)
+		dbReminder.RiverJobID = int(handle)
 
 	} else {
 		args := workers.ReminderJobArgs{
@@ -113,7 +118,7 @@ func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (
 			return nil, err
 		}
 
-		dbReminder.JobID = int(insertResult.Job.ID)
+		dbReminder.RiverJobID = int(insertResult.Job.ID)
 
 	}
 
@@ -136,10 +141,10 @@ func (rc *Controller) DeleteReminder(id int64) error {
 		return err
 	}
 
-	if reminder.Type == "repeating" {
-		rc.riverClient.PeriodicJobs().Remove(rivertype.PeriodicJobHandle(reminder.JobID))
+	if reminder.IsRepeating {
+		rc.riverClient.PeriodicJobs().Remove(rivertype.PeriodicJobHandle(reminder.RiverJobID))
 	} else {
-		rc.riverClient.JobDelete(context.Background(), int64(reminder.JobID))
+		rc.riverClient.JobDelete(context.Background(), int64(reminder.RiverJobID))
 	}
 
 	// Delete the reminder from database

@@ -1,0 +1,73 @@
+package contactmethodcontroller
+
+import (
+	"reminder-app/controller/protocol"
+	"reminder-app/models"
+
+	"go.uber.org/fx"
+	"gorm.io/gorm"
+)
+
+type Controller struct {
+	db *gorm.DB
+}
+
+type Params struct {
+	fx.In
+
+	DB *gorm.DB
+}
+
+func New(p Params) *Controller {
+	return &Controller{db: p.DB}
+}
+
+func (cc *Controller) GetContactMethods(userID int64) ([]protocol.ContactMethod, error) {
+	var dbContactMethods []models.ContactMethod
+	err := cc.db.Where("user_id = ?", userID).Find(&dbContactMethods).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var protocolContactMethods []protocol.ContactMethod
+	for _, dbContactMethod := range dbContactMethods {
+		protocolContactMethods = append(protocolContactMethods, protocol.ContactMethod{
+			ID:          int64(dbContactMethod.ID),
+			UserID:      dbContactMethod.UserID,
+			Type:        dbContactMethod.Type,
+			Value:       dbContactMethod.Value,
+			Description: dbContactMethod.Description,
+		})
+	}
+	return protocolContactMethods, nil
+}
+
+func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactMethodRequest) (*models.ContactMethod, error) {
+	dbContactMethod := &models.ContactMethod{
+		UserID:      contactMethod.UserID,
+		Type:        contactMethod.Type,
+		Value:       contactMethod.Value,
+		Description: contactMethod.Description,
+	}
+
+	err := cc.db.Create(dbContactMethod).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return dbContactMethod, nil
+}
+
+func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.UpdateContactMethodRequest) error {
+	err := cc.db.Model(&models.ContactMethod{}).Where("id = ?", id).Updates(map[string]interface{}{
+		"type":        contactMethod.Type,
+		"value":       contactMethod.Value,
+		"description": contactMethod.Description,
+	}).Error
+	return err
+}
+
+func (cc *Controller) DeleteContactMethod(id int64) error {
+	err := cc.db.Delete(&models.ContactMethod{}, id).Error
+	return err
+}

@@ -28,11 +28,11 @@ type ContactMethod struct {
 
 type Reminder struct {
 	BaseModel
-	UserID        int64     `json:"user_id" gorm:"not null"`
-	Message       string    `json:"message" gorm:"not null"`
-	StartTime     time.Time `json:"start_time" gorm:"not null"`
-	Type          string    `json:"type" gorm:"not null;type:reminder_type"`
-	PeriodMinutes int64     `json:"period_minutes" gorm:"not null;default:0"`
-	DeliveryType  string    `json:"delivery_type" gorm:"not null;type:delivery_type"`
-	JobID         int       `json:"job_id"`
+	UserID          int64     `json:"user_id" gorm:"not null"`
+	RiverJobID      int       `json:"river_job_id"`
+	ContactMethodID int64     `json:"contact_method_id" gorm:"not null"`
+	Body            string    `json:"body" gorm:"not null"`
+	StartTime       time.Time `json:"start_time" gorm:"not null"`
+	IsRepeating     bool      `json:"is_repeating" gorm:"not null;default:false"`
+	PeriodMinutes   int64     `json:"period_minutes" gorm:"not null;default:0"`
 }

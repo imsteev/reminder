@@ -33,28 +33,6 @@ func Up202412291545(tx *gorm.DB) error {
 		return err
 	}
 
-	if err := tx.Exec(`
-		DO $$ 
-		BEGIN
-			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'reminder_type') THEN
-				CREATE TYPE reminder_type AS ENUM ('one-time', 'repeating');
-			END IF;
-		END $$;
-	`).Error; err != nil {
-		return err
-	}
-
-	if err := tx.Exec(`
-		DO $$ 
-		BEGIN
-			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'delivery_type') THEN
-				CREATE TYPE delivery_type AS ENUM ('sms', 'email');
-			END IF;
-		END $$;
-	`).Error; err != nil {
-		return err
-	}
-
 	// Create tables using GORM's AutoMigrate
 	if err := tx.AutoMigrate(
 		&models.User{},
@@ -69,7 +47,7 @@ func Up202412291545(tx *gorm.DB) error {
 		BaseModel: models.BaseModel{
 			ID: 1,
 		},
-		Name: "Test User",
+		Name: "Stephen Chung",
 	}
 
 	// Use FirstOrCreate to avoid duplicates if migration is run multiple times
@@ -82,13 +60,13 @@ func Up202412291545(tx *gorm.DB) error {
 		{
 			UserID:      1,
 			Type:        "phone",
-			Value:       "+1234567890",
+			Value:       "+19084323855",
 			Description: "Primary phone",
 		},
 		{
 			UserID:      1,
 			Type:        "email",
-			Value:       "test@example.com",
+			Value:       "spchung95@gmail.com",
 			Description: "Primary email",
 		},
 	}
@@ -97,23 +75,6 @@ func Up202412291545(tx *gorm.DB) error {
 		if err := tx.FirstOrCreate(&cm, "user_id = ? AND type = ?", cm.UserID, cm.Type).Error; err != nil {
 			return err
 		}
-	}
-
-	// Add performance indexes for reminders
-	if err := tx.Exec(`
-		CREATE INDEX IF NOT EXISTS idx_reminders_user_start_time 
-		ON reminders(user_id, start_time) 
-		WHERE deleted_at IS NULL
-	`).Error; err != nil {
-		return err
-	}
-
-	if err := tx.Exec(`
-		CREATE INDEX IF NOT EXISTS idx_reminders_type_delivery 
-		ON reminders(type, delivery_type) 
-		WHERE deleted_at IS NULL
-	`).Error; err != nil {
-		return err
 	}
 
 	return nil
@@ -126,7 +87,7 @@ func Down202412291545(tx *gorm.DB) error {
 		return err
 	}
 
-	if err := tx.Exec("DROP INDEX IF EXISTS idx_reminders_type_delivery").Error; err != nil {
+	if err := tx.Exec("DROP INDEX IF EXISTS idx_reminders_repeating_contact").Error; err != nil {
 		return err
 	}
 
@@ -144,14 +105,6 @@ func Down202412291545(tx *gorm.DB) error {
 	}
 
 	// Drop ENUM types
-	if err := tx.Exec("DROP TYPE IF EXISTS delivery_type").Error; err != nil {
-		return err
-	}
-
-	if err := tx.Exec("DROP TYPE IF EXISTS reminder_type").Error; err != nil {
-		return err
-	}
-
 	if err := tx.Exec("DROP TYPE IF EXISTS contact_type").Error; err != nil {
 		return err
 	}

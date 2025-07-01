@@ -1,14 +1,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Button,
   Field,
   Input,
-  PhoneInput,
   Textarea,
 } from "../../components/ui";
-import { createReminder } from "../../api/reminders";
+import { createReminder, getContactMethods, createContactMethod } from "../../api/reminders";
 import {
   getCurrentDateTimeString,
   getDateTimeStringInMinutes,
@@ -23,16 +22,17 @@ import {
 
 interface ReminderFormData {
   name?: string;
-  message?: string;
-  contactValue?: string;
+  body?: string;
+  contactMethodID?: number;
   reminderType?: "one-time" | "repeating";
-  deliveryType?: "sms" | "email";
   intervalDays?: number;
   intervalHours?: number;
   intervalMinutes?: number;
   startTime?: string;
-  phoneNumber?: string;
-  email?: string;
+  newContactMethodType?: "phone" | "email";
+  newContactMethodValue?: string;
+  newContactMethodDescription?: string;
+  createNewContactMethod?: boolean;
 }
 
 interface ReminderFormProps {
@@ -54,19 +54,30 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   } = useForm<ReminderFormData>({
     defaultValues: {
       name: initialData?.name || "",
-      message: initialData?.message || "",
+      body: initialData?.body || "",
       reminderType: initialData?.reminderType || "one-time",
-      deliveryType: initialData?.deliveryType || "sms",
+      contactMethodID: initialData?.contactMethodID || undefined,
       intervalDays: initialData?.intervalDays || 0,
       intervalHours: initialData?.intervalHours || 1,
       intervalMinutes: initialData?.intervalMinutes || 0,
       startTime: initialData?.startTime || "",
-      contactValue: initialData?.contactValue || "",
+      createNewContactMethod: false,
+      newContactMethodType: "email",
     },
   });
 
   const reminderType = watch("reminderType");
-  const deliveryType = watch("deliveryType");
+  const createNewContactMethod = watch("createNewContactMethod");
+  const newContactMethodType = watch("newContactMethodType");
+
+  const { data: contactMethods = [] } = useQuery({
+    queryKey: ["contactMethods", DEFAULT_USER_ID],
+    queryFn: () => getContactMethods(DEFAULT_USER_ID),
+  });
+
+  const createContactMethodMutation = useMutation({
+    mutationFn: createContactMethod,
+  });
 
   const createMutation = useMutation({
     mutationFn: createReminder,
@@ -95,7 +106,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     }
   }, [initialData?.startTime]);
 
-  const onSubmit = (data: ReminderFormData) => {
+  const onSubmit = async (data: ReminderFormData) => {
     const isOneTime = data.reminderType === "one-time";
 
     let periodMinutes = 0;
@@ -106,19 +117,37 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       periodMinutes = days * 24 * 60 + hours * 60 + minutes;
     }
 
-    const isSms = data.deliveryType === "sms";
+    let contactMethodId = data.contactMethodID;
+
+    if (data.createNewContactMethod) {
+      try {
+        const newContactMethod = await createContactMethodMutation.mutateAsync({
+          user_id: DEFAULT_USER_ID,
+          type: data.newContactMethodType || "email",
+          value: data.newContactMethodValue || "",
+          description: data.newContactMethodDescription || "",
+        });
+        contactMethodId = newContactMethod.id;
+      } catch (error) {
+        console.error("Failed to create contact method:", error);
+        return;
+      }
+    }
+
+    if (!contactMethodId) {
+      console.error("No contact method selected or created");
+      return;
+    }
 
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
-      message: data.message || "",
+      body: data.body || "",
       start_time: data.startTime
         ? new Date(data.startTime).toISOString()
         : new Date().toISOString(),
-      type: data.reminderType || "repeating",
+      is_repeating: data.reminderType === "repeating",
       period_minutes: periodMinutes,
-      delivery_type: data.deliveryType || "sms",
-      phone_number: isSms ? data.contactValue : undefined,
-      email: !isSms ? data.contactValue : undefined,
+      contact_method_id: contactMethodId,
     });
   };
 
@@ -233,7 +262,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         <Field.Control
           render={
             <Textarea
-              {...register("message")}
+              {...register("body")}
               placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
               rows={3}
             />
@@ -242,49 +271,90 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       </Field.Root>
 
       <Field.Root>
-        <Field.Label>Delivery Method</Field.Label>
-        <div className="flex gap-3">
-          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-            <input
-              type="radio"
-              value="sms"
-              {...register("deliveryType")}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+        <Field.Label>Contact Method</Field.Label>
+        {contactMethods.length > 0 && (
+          <div className="space-y-3">
+            <div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={!createNewContactMethod}
+                  onChange={() => setValue("createNewContactMethod", false)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium">Use existing contact method</span>
+              </label>
+              
+              {!createNewContactMethod && (
+                <div className="mt-2 ml-6">
+                  <select
+                    {...register("contactMethodID", { valueAsNumber: true })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a contact method</option>
+                    {contactMethods.map((method) => (
+                      <option key={method.id} value={method.id}>
+                        {method.description || `${method.type}: ${method.value}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            
+            <div>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  checked={createNewContactMethod}
+                  onChange={() => setValue("createNewContactMethod", true)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium">Create new contact method</span>
+              </label>
+            </div>
+          </div>
+        )}
+        
+        {(contactMethods.length === 0 || createNewContactMethod) && (
+          <div className="space-y-3 mt-3">
+            {contactMethods.length === 0 && (
+              <p className="text-sm text-gray-600">No contact methods found. Create your first one:</p>
+            )}
+            
+            <div className="flex gap-3">
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="email"
+                  {...register("newContactMethodType")}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm">Email</span>
+              </label>
+              <label className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  value="phone"
+                  {...register("newContactMethodType")}
+                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="text-sm">Phone</span>
+              </label>
+            </div>
+            
+            <Input
+              {...register("newContactMethodValue")}
+              placeholder={newContactMethodType === "email" ? "user@example.com" : "+1234567890"}
+              type={newContactMethodType === "email" ? "email" : "tel"}
             />
-            <span className="text-sm">SMS</span>
-          </label>
-          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-            <input
-              type="radio"
-              value="email"
-              {...register("deliveryType")}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            
+            <Input
+              {...register("newContactMethodDescription")}
+              placeholder="Description (e.g., Personal email, Work phone)"
             />
-            <span className="text-sm">Email</span>
-          </label>
-        </div>
-      </Field.Root>
-
-      <Field.Root>
-        <Field.Label>
-          {deliveryType === "sms" ? "Phone Number" : "Email Address"}
-        </Field.Label>
-        <Field.Control
-          render={
-            deliveryType === "sms" ? (
-              <PhoneInput
-                value={watch("contactValue")}
-                onChange={(value) => setValue("contactValue", value)}
-              />
-            ) : (
-              <Input
-                type="email"
-                {...register("contactValue")}
-                placeholder="user@example.com"
-              />
-            )
-          }
-        />
+          </div>
+        )}
       </Field.Root>
 
       <div>

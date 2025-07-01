@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/remindercontroller"
 
 	"go.uber.org/fx"
@@ -9,5 +10,6 @@ import (
 var Module = fx.Module("controller",
 	fx.Provide(
 		remindercontroller.New,
+		contactmethodcontroller.New,
 	),
 )

@@ -60,7 +60,7 @@ func Up202412291545(tx *gorm.DB) error {
 		{
 			UserID:      1,
 			Type:        "phone",
-			Value:       "+19084323855",
+			Value:       "9084323855",
 			Description: "Primary phone",
 		},
 		{

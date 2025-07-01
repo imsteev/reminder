@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"reminder-app/config"
@@ -19,13 +18,13 @@ import (
 )
 
 func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
-	fmt.Println("Starting River background job client...")
+	log.Println("Starting River background job client...")
 
 	if err := riverClient.Start(context.Background()); err != nil {
 		log.Fatalf("Failed to start River client: %v", err)
 	}
 
-	fmt.Println("River client started successfully")
+	log.Println("River client started successfully")
 }
 
 func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
@@ -33,10 +32,12 @@ func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 }
 
 func StartReminderService(cfg *config.Config, httpHandler *handler.Handler) {
-	server := &http.Server{Addr: ":" + cfg.Port, Handler: httpHandler}
+	log.Printf("Starting reminder service on port %s\n", cfg.Port)
 
-	fmt.Printf("Starting reminder service on port %s\n", cfg.Port)
-
+	server := &http.Server{
+		Addr:    ":" + cfg.Port,
+		Handler: httpHandler,
+	}
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("HTTP server error: %v", err)
 	}

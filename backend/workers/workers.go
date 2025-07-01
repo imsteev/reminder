@@ -20,7 +20,7 @@ func New() *river.Workers {
 
 func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 	fmt.Println("Restoring periodic jobs...")
-	
+
 	var reminders []models.Reminder
 	err := db.Where("type = ? AND deleted_at IS NULL", "repeating").Find(&reminders).Error
 	if err != nil {

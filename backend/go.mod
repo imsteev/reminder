@@ -6,9 +6,9 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-gormigrate/gormigrate/v2 v2.1.4
 	github.com/jackc/pgx/v5 v5.6.0
-	github.com/joho/godotenv v1.5.1
 	github.com/riverqueue/river v0.7.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.7.0
+	github.com/sethvargo/go-envconfig v1.3.0
 	go.uber.org/fx v1.24.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.30.0

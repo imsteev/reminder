@@ -1,34 +1,22 @@
 package config
 
 import (
+	"context"
 	"log"
-	"os"
 
-	"github.com/joho/godotenv"
+	"github.com/sethvargo/go-envconfig"
 )
 
 type Config struct {
-	DatabaseURL string
-	Port        string
+	DatabaseURL string `env:"DATABASE_URL,default=postgres://localhost/reminder?sslmode=disable"`
+	Port        string `env:"PORT,default=8080"`
 }
 
 func New() *Config {
-	if err := godotenv.Load(); err != nil {
-		log.Println("Error loading .env file:", err)
+	var cfg Config
+	if err := envconfig.Process(context.Background(), &cfg); err != nil {
+		log.Fatalf("Failed to process environment variables: %v", err)
 	}
 
-	dbURL := os.Getenv("DATABASE_URL")
-	if dbURL == "" {
-		dbURL = "postgres://localhost/reminder?sslmode=disable"
-	}
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
-
-	return &Config{
-		DatabaseURL: dbURL,
-		Port:        port,
-	}
+	return &cfg
 }

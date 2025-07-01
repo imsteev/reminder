@@ -14,6 +14,7 @@ A web application for managing recurring text message reminders, built with Go b
    ```bash
    cp .env.example .env
    # Update .env with your database credentials
+   # Configuration uses go-envconfig with defaults defined in backend/config/config.go
    ```
 
 2. Run migrations and start backend:
@@ -49,6 +50,17 @@ To add a migration:
 1. Run `just migrate-new YourFeature` (uses embedded Go templates)
 2. Edit the generated file in `backend/db/migrate/`
 3. Add constructor to `db/migrate/migrator.go`
+
+## Configuration
+
+Configuration is managed using [go-envconfig](https://github.com/sethvargo/go-envconfig) with struct tags and defaults:
+
+| Environment Variable | Default | Description |
+|---------------------|---------|-------------|
+| `DATABASE_URL` | `postgres://localhost/reminder?sslmode=disable` | PostgreSQL connection string |
+| `PORT` | `8080` | HTTP server port |
+
+You can override any setting by setting environment variables or updating your `.env` file.
 
 ## API
 

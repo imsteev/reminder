@@ -68,6 +68,8 @@ github.com/pelletier/go-toml/v2 v2.0.8 h1:0ctb6s9mE31h0/lhu+J6OPmVeDxJn+kYnJc2jZ
 github.com/pelletier/go-toml/v2 v2.0.8/go.mod h1:vuYfssBdrU2XDZ9bYydBu6t+6a6PYNcZljzZR9VXg+4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/resend/resend-go/v2 v2.21.0 h1:8aZwFd5Mry5fcBXSuZYHyKhsbnQooj5+Q/ebyMtd3Rc=
+github.com/resend/resend-go/v2 v2.21.0/go.mod h1:3YCb8c8+pLiqhtRFXTyFwlLvfjQtluxOr9HEh2BwCkQ=
 github.com/riverqueue/river v0.7.0 h1:STWnPn0APPKQkAjsJG5Q8NzFOxPXI/BKNAL6dPT7oI8=
 github.com/riverqueue/river v0.7.0/go.mod h1:ulIQc2U1mUTQNTnInytnVu4vhU9GJGeWReXtndvLBXI=
 github.com/riverqueue/river/riverdriver v0.7.0 h1:cPnv/T3vNoS8kQQ1GzXhT5eghIFAd6ElF6sEEp/tPv4=

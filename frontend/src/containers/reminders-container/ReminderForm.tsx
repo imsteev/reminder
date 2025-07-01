@@ -158,7 +158,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
             <Input
               {...register("name")}
               className="w-full"
-              placeholder="Name"
+              placeholder="Message"
               autoFocus
             />
           }
@@ -257,7 +257,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         </div>
       )}
 
-      <Field.Root>
+      {/* <Field.Root>
         <Field.Control
           render={
             <Textarea
@@ -267,7 +267,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
             />
           }
         />
-      </Field.Root>
+      </Field.Root> */}
 
       <Field.Root>
         <Field.Label>Contact Method</Field.Label>

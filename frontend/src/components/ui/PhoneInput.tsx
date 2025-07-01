@@ -50,7 +50,7 @@ const PhoneInput = forwardRef<HTMLInputElement, Props>(
   }
 );
 
-const formatPhoneNumber = (value: string): string => {
+export const formatPhoneNumber = (value: string): string => {
   const cleaned = value.replace(/\D/g, "");
 
   if (cleaned.length === 0) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reminder-app/lib/mail"
 	"reminder-app/models"
 
 	"github.com/riverqueue/river"
@@ -23,7 +24,7 @@ type EmailSender interface {
 type ReminderJobWorker struct {
 	river.WorkerDefaults[ReminderJobArgs]
 	GormDB      *gorm.DB
-	EmailSender EmailSender
+	EmailSender mail.Sender
 }
 
 func (w *ReminderJobWorker) Work(ctx context.Context, job *river.Job[ReminderJobArgs]) error {

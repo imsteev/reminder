@@ -40,3 +40,4 @@
   - Factor out components if there's more than 5 separate and unrelated pieces of state
   - If needed, use a folder to encapsulate related components
   - Components that mutate data should have some way to refresh data after performing the operation
+  - When defining the type of a component's props, use the name `Props`. No need to prefix with the name of the component.

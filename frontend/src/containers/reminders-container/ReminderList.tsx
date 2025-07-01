@@ -5,24 +5,19 @@ import { deleteReminder, Reminder } from "../../api/reminders";
 import Timeline from "./timeline/Timeline";
 import { getNextOccurrence } from "./timeline/utils";
 
-interface ReminderListProps {
+interface Props {
   reminders?: Reminder[];
   isLoading: boolean;
   error: any;
-  onDelete: () => void;
-  completedOnly?: boolean;
-  includeShowCompletedButton?: boolean;
+  onDeleteSuccess: () => void;
 }
 
-const ReminderList: React.FC<ReminderListProps> = ({
+const ReminderList: React.FC<Props> = ({
   reminders,
   isLoading,
   error,
-  onDelete,
-  completedOnly,
-  includeShowCompletedButton,
+  onDeleteSuccess,
 }) => {
-  const [showPast, setShowPast] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -35,7 +30,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
   const deleteMutation = useMutation({
     mutationFn: deleteReminder,
     onSuccess: () => {
-      onDelete();
+      onDeleteSuccess();
     },
   });
 
@@ -50,28 +45,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
       </div>
     );
 
-  const filteredReminders = reminders?.filter((reminder) => {
-    if (completedOnly) {
-      return reminder.type === "one-time" && isReminderPast(reminder);
-    }
-    // Always show repeating reminders, only filter one-time reminders based on showPast
-    if (reminder.type === "repeating") {
-      return true;
-    }
-    return showPast || !isReminderPast(reminder);
-  });
-
-  const activeReminders = showPast
-    ? filteredReminders
-    : filteredReminders?.filter(
-        (reminder) => reminder.type === "repeating" || !isReminderPast(reminder)
-      );
-
-  const pastReminderCount =
-    filteredReminders?.filter(isReminderPast).length || 0;
-
-  // Sort reminders by next occurrence time for timeline
-  const sortedReminders = [...(activeReminders || [])].sort(
+  const sortedReminders = reminders?.sort(
     (a, b) =>
       getNextOccurrence(a, currentTime).getTime() -
       getNextOccurrence(b, currentTime).getTime()
@@ -79,21 +53,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
 
   return (
     <div className="w-full">
-      {pastReminderCount > 0 && includeShowCompletedButton && (
-        <div className="mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPast(!showPast)}
-            className="text-gray-500"
-          >
-            {showPast ? "Hide" : "Show"} completed reminders (
-            {pastReminderCount})
-          </Button>
-        </div>
-      )}
-
-      {sortedReminders.length === 0 ? (
+      {!sortedReminders?.length ? (
         <p className="text-gray-500 text-center py-8">
           No reminders yet. Create your first one!
         </p>
@@ -107,11 +67,6 @@ const ReminderList: React.FC<ReminderListProps> = ({
       )}
     </div>
   );
-};
-
-const isReminderPast = (reminder: Reminder) => {
-  if (reminder.type === "repeating") return false;
-  return new Date(reminder.start_time) < new Date();
 };
 
 export default ReminderList;

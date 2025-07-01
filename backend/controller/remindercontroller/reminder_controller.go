@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reminder-app/models"
 	"reminder-app/workers"
 	"time"
@@ -31,7 +32,6 @@ func New(p Params) *Controller {
 }
 
 func (rc *Controller) GetReminders(userID int64) ([]models.Reminder, error) {
-	fmt.Println("GetReminders", userID)
 	var reminders []models.Reminder
 	err := rc.db.Where("user_id = ?", userID).Order("start_time").Find(&reminders).Error
 	return reminders, err
@@ -43,30 +43,28 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) (*models.Reminde
 		return nil, err
 	}
 
-	if reminder.Type == "repeating" && reminder.PeriodMinutes <= 0 {
+	isRepeating := reminder.Type == "repeating"
+
+	if isRepeating && reminder.PeriodMinutes <= 0 {
 		return nil, errors.New("period minutes must be greater than 0")
 	}
 
-	if reminder.Type == "repeating" {
-
-		period := time.Duration(reminder.PeriodMinutes) * time.Minute
-
-		periodicJob := river.NewPeriodicJob(
-			river.PeriodicInterval(period),
-			func() (river.JobArgs, *river.InsertOpts) {
-				args := workers.PeriodicReminderJobArgs{
-					ReminderID: int(reminder.ID),
-				}
-				opts := &river.InsertOpts{
-					ScheduledAt: reminder.StartTime,
-				}
-				return args, opts
-			},
+	if isRepeating {
+		args := workers.PeriodicReminderJobArgs{
+			ReminderID: int(reminder.ID),
+		}
+		opts := &river.InsertOpts{
+			ScheduledAt: reminder.StartTime,
+		}
+		job := river.NewPeriodicJob(
+			river.PeriodicInterval(time.Duration(reminder.PeriodMinutes)),
+			func() (river.JobArgs, *river.InsertOpts) { return args, opts },
 			nil,
 		)
 
-		handle := rc.riverClient.PeriodicJobs().Add(periodicJob)
+		handle := rc.riverClient.PeriodicJobs().Add(job)
 
+		fmt.Println("🔄 ADDED PERIODIC JOB", handle)
 		reminder.JobID = int(handle)
 
 	} else {
@@ -99,6 +97,23 @@ func (rc *Controller) UpdateReminder(id int64, reminder *models.Reminder) error 
 }
 
 func (rc *Controller) DeleteReminder(id int64) error {
-	err := rc.db.Delete(&models.Reminder{}, id).Error
-	return err
+	var reminder models.Reminder
+	if err := rc.db.Where("id = ?", id).First(&reminder).Error; err != nil {
+		return err
+	}
+
+	if reminder.JobID > 0 {
+		if _, err := rc.riverClient.JobCancel(context.Background(), int64(reminder.JobID)); err != nil {
+			return err
+		}
+	} else {
+		log.Println("No job found for reminder", reminder.ID)
+	}
+
+	// Delete the reminder from database
+	if err := rc.db.Delete(&reminder).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -62,15 +62,7 @@ export default function RemindersContainer() {
               reminders={reminders}
               isLoading={isLoading}
               error={error}
-              onDelete={refetch}
-            />
-            <ReminderList
-              reminders={reminders}
-              isLoading={isLoading}
-              error={error}
-              onDelete={refetch}
-              completedOnly
-              includeShowCompletedButton
+              onDeleteSuccess={refetch}
             />
           </div>
         </div>

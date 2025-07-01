@@ -62,3 +62,5 @@ frontend/build/
 frontend/.next/
 frontend/.nuxt/
 frontend/.vite/
+
+backend/reminder-app

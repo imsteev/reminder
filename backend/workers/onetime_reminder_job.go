@@ -22,6 +22,10 @@ type OneTimeReminderJobWorker struct {
 }
 
 func (w *OneTimeReminderJobWorker) Work(ctx context.Context, job *river.Job[OneTimeReminderJobArgs]) error {
-	fmt.Printf("OneTimeReminderJobWorker: %v\n", job.Args)
+	fmt.Printf("🔄 EXECUTING OneTimeReminderJobWorker for reminder %d: %s\n", job.Args.ReminderID, job.Args.Message)
+
+	// TODO: Implement the logic to send the reminder
+
+	fmt.Printf("✅ COMPLETED OneTimeReminderJobWorker for reminder %d: %s\n", job.Args.ReminderID, job.Args.Message)
 	return nil
 }

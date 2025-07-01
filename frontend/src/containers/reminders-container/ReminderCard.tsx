@@ -1,6 +1,6 @@
 import React from "react";
 import { format } from "date-fns";
-import { Button } from "../../components/ui";
+import { Button, Card, CardContent } from "../../components/ui";
 import { Reminder } from "../../api/reminders";
 import { cn } from "../../utils/cn";
 
@@ -22,28 +22,15 @@ export default function ReminderCard({
   isDeleting,
 }: ReminderCardProps) {
   return (
-    <div className="relative flex items-center">
-      {/* Timeline dot */}
-      <div
-        className={`w-4 h-4 rounded-full border-2 border-white shadow-md z-10 flex-shrink-0 ${
-          isUpcoming
-            ? reminder.type === "repeating"
-              ? "bg-blue-500"
-              : "bg-green-500"
-            : "bg-gray-400"
-        }`}
-      ></div>
-
-      {/* Reminder card */}
-      <div
-        className={`ml-4 flex-1 p-4 rounded-lg shadow border ${
-          isUpcoming
-            ? reminder.type === "repeating"
-              ? "bg-white border-blue-200"
-              : "bg-white border-green-200"
-            : "bg-gray-50 border-gray-300"
-        }`}
-      >
+    <Card
+      variant={isUpcoming ? "default" : "filled"}
+      className={cn(
+        "flex-1",
+        isUpcoming && reminder.type === "repeating" && "border-blue-200",
+        isUpcoming && reminder.type !== "repeating" && "border-green-200"
+      )}
+    >
+      <CardContent>
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
@@ -101,7 +88,7 @@ export default function ReminderCard({
             🗑️
           </Button>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

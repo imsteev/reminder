@@ -1,11 +1,11 @@
 import React from "react";
 import { Reminder } from "../../../api/reminders";
-import { formatDistanceToNow, differenceInMinutes, isBefore } from "date-fns";
-import TimelineMarker from "./TimelineMarker";
+import NowMarker from "./NowMarker";
 import ReminderCard from "../ReminderCard";
 import { getNextOccurrence, getTimelinePosition } from "./utils";
+import TimelineDot from "./TimelineDot";
 
-interface TimelineProps {
+interface Props {
   reminders: Reminder[];
   currentTime: Date;
   onDelete: (id: number) => void;
@@ -17,30 +17,18 @@ export default function Timeline({
   currentTime,
   onDelete,
   isDeleting,
-}: TimelineProps) {
-  const nowIndex = reminders.findIndex(
-    (reminder) => getNextOccurrence(reminder, currentTime) > currentTime
-  );
-  const showNowMarker = reminders.length > 0;
-
+}: Props) {
   return (
     <div className="relative">
-      {/* Timeline line */}
-      <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-
       <div className="space-y-6">
-        {reminders.map((reminder, index) => {
+        <NowMarker currentTime={currentTime} />
+        {reminders.map((reminder) => {
           const reminderTime = getNextOccurrence(reminder, currentTime);
           const timelineInfo = getTimelinePosition(reminderTime, currentTime);
           const isUpcoming = reminderTime > currentTime;
-
           return (
-            <div key={reminder.id}>
-              {/* Show NOW marker before the first upcoming reminder */}
-              {showNowMarker && index === nowIndex && (
-                <TimelineMarker currentTime={currentTime} />
-              )}
-
+            <div key={reminder.id} className="flex items-center gap-2">
+              <TimelineDot isUpcoming={isUpcoming} type={reminder.type} />
               <ReminderCard
                 reminder={reminder}
                 reminderTime={reminderTime}
@@ -52,11 +40,6 @@ export default function Timeline({
             </div>
           );
         })}
-
-        {/* Show NOW marker at the end if all reminders are in the past */}
-        {showNowMarker && nowIndex === -1 && (
-          <TimelineMarker currentTime={currentTime} />
-        )}
       </div>
     </div>
   );

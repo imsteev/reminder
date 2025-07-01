@@ -12,7 +12,7 @@ import (
 
 func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) error {
 	var reminders []models.Reminder
-	err := db.Where("type = ? AND deleted_at IS NULL", "repeating").Find(&reminders).Error
+	err := db.Where("is_repeating AND deleted_at IS NULL").Find(&reminders).Error
 	if err != nil {
 		return err
 	}

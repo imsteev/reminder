@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/protocol"
 	"reminder-app/controller/remindercontroller"
 	"reminder-app/models"
@@ -13,13 +14,15 @@ import (
 
 type Handler struct {
 	*gin.Engine
-	reminderController *remindercontroller.Controller
+	reminderController     *remindercontroller.Controller
+	contactMethodController *contactmethodcontroller.Controller
 }
 
 type Params struct {
 	fx.In
 
-	ReminderController *remindercontroller.Controller
+	ReminderController     *remindercontroller.Controller
+	ContactMethodController *contactmethodcontroller.Controller
 }
 
 var _ http.Handler = (*Handler)(nil)
@@ -27,8 +30,9 @@ var _ http.Handler = (*Handler)(nil)
 func New(p Params) *Handler {
 	api := gin.Default()
 	h := &Handler{
-		Engine:             api,
-		reminderController: p.ReminderController,
+		Engine:                  api,
+		reminderController:      p.ReminderController,
+		contactMethodController: p.ContactMethodController,
 	}
 	return h.init()
 }
@@ -52,6 +56,11 @@ func (h *Handler) init() *Handler {
 	grp.POST("/reminders", h.handleCreateReminder)
 	grp.PUT("/reminders/:id", h.handleUpdateReminder)
 	grp.DELETE("/reminders/:id", h.handleDeleteReminder)
+	
+	grp.GET("/contact-methods", h.handleGetContactMethods)
+	grp.POST("/contact-methods", h.handleCreateContactMethod)
+	grp.PUT("/contact-methods/:id", h.handleUpdateContactMethod)
+	grp.DELETE("/contact-methods/:id", h.handleDeleteContactMethod)
 
 	return h
 }
@@ -134,4 +143,80 @@ func (h *Handler) handleDeleteReminder(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "reminder deleted successfully"})
+}
+
+func (h *Handler) handleGetContactMethods(c *gin.Context) {
+	userIDStr := c.Query("user_id")
+	if userIDStr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id is required"})
+		return
+	}
+
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id"})
+		return
+	}
+
+	contactMethods, err := h.contactMethodController.GetContactMethods(userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, contactMethods)
+}
+
+func (h *Handler) handleCreateContactMethod(c *gin.Context) {
+	var contactMethod protocol.CreateContactMethodRequest
+	if err := c.ShouldBindJSON(&contactMethod); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	savedContactMethod, err := h.contactMethodController.CreateContactMethod(&contactMethod)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, savedContactMethod)
+}
+
+func (h *Handler) handleUpdateContactMethod(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid contact method id"})
+		return
+	}
+
+	var contactMethod protocol.UpdateContactMethodRequest
+	if err := c.ShouldBindJSON(&contactMethod); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.contactMethodController.UpdateContactMethod(id, &contactMethod); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "contact method updated successfully"})
+}
+
+func (h *Handler) handleDeleteContactMethod(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid contact method id"})
+		return
+	}
+
+	if err := h.contactMethodController.DeleteContactMethod(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "contact method deleted successfully"})
 }

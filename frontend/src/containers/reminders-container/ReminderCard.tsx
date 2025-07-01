@@ -28,8 +28,8 @@ export default function ReminderCard({
       variant={isUpcoming ? "default" : "filled"}
       className={cn(
         "flex-1",
-        isUpcoming && reminder.type === "repeating" && "border-blue-200",
-        isUpcoming && reminder.type !== "repeating" && "border-green-200"
+        isUpcoming && reminder.is_repeating && "border-blue-200",
+        isUpcoming && !reminder.is_repeating && "border-green-200"
       )}
     >
       <CardContent>
@@ -39,11 +39,11 @@ export default function ReminderCard({
               <span className="text-xs text-gray-500">#{reminder.id}</span>
               <p className={cn("font-medium")}>
                 {reminder.name ||
-                  reminder.message?.slice(0, 30) +
-                    (reminder.message?.length > 30 ? "..." : "") ||
+                  reminder.body?.slice(0, 30) +
+                    (reminder.body?.length > 30 ? "..." : "") ||
                   "-"}
               </p>
-              {reminder.type === "repeating" && (
+              {reminder.is_repeating && (
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded-full ${
                     isUpcoming
@@ -63,7 +63,7 @@ export default function ReminderCard({
                 }`}
               >
                 <span className="font-medium">{timelineInfo.distance}</span>
-                {reminder.type === "repeating" && (
+                {reminder.is_repeating && (
                   <span className="text-xs text-blue-600">
                     • Next occurrence
                   </span>
@@ -80,7 +80,7 @@ export default function ReminderCard({
           </div>
 
           <div className="flex items-center gap-2 ml-4">
-            {!isUpcoming && reminder.type === "one-time" && onReschedule && (
+            {!isUpcoming && !reminder.is_repeating && onReschedule && (
               <Button
                 variant="ghost"
                 size="sm"

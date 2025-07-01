@@ -42,14 +42,14 @@ export default function Timeline({
 
     return {
       name: reminder.name || "",
-      message: reminder.message || "",
-      reminderType: reminder.type as "one-time" | "repeating",
-      deliveryType: reminder.delivery_type as "sms" | "email",
+      body: reminder.body || "",
+      reminderType: reminder.is_repeating ? "repeating" as const : "one-time" as const,
+      contactMethodID: reminder.contact_method_id,
       intervalDays: days,
       intervalHours: hours,
       intervalMinutes: minutes,
       startTime: getCurrentDateTimeString(), // Set to now for reschedule
-      contactValue: "", // Will be filled from contact methods if available
+      createNewContactMethod: false,
     };
   };
   return (

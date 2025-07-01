@@ -28,10 +28,17 @@ type ReminderJobWorker struct {
 }
 
 func (w *ReminderJobWorker) Work(ctx context.Context, job *river.Job[ReminderJobArgs]) error {
+
 	var reminder models.Reminder
-	w.GormDB.Model(&reminder).Where("id = ?", job.Args.ReminderID).First(&reminder)
-	if reminder.ID == 0 {
-		return fmt.Errorf("reminder not found")
+	err := w.GormDB.Model(&reminder).Where("id = ?", job.Args.ReminderID).First(&reminder).Error
+	if err != nil {
+		return fmt.Errorf("failed to get reminder: %w", err)
+	}
+
+	var contactMethod models.ContactMethod
+	err = w.GormDB.Model(&contactMethod).Where("id = ?", reminder.ContactMethodID).First(&contactMethod).Error
+	if err != nil {
+		return fmt.Errorf("failed to get contact method: %w", err)
 	}
 
 	marshaledReminder, err := json.Marshal(reminder)
@@ -39,7 +46,12 @@ func (w *ReminderJobWorker) Work(ctx context.Context, job *river.Job[ReminderJob
 		return fmt.Errorf("failed to marshal reminder: %w", err)
 	}
 
-	w.EmailSender.Send("spchung95@gmail.com", "Reminder", string(marshaledReminder))
+	switch contactMethod.Type {
+	case "email":
+		return w.EmailSender.Send(contactMethod.Value, "Reminder", string(marshaledReminder))
+	case "phone":
+		fmt.Println("Phone number:", contactMethod.Value)
+	}
 
 	return nil
 }

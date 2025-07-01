@@ -84,12 +84,13 @@ func (h *Handler) handleCreateReminder(c *gin.Context) {
 		return
 	}
 
-	if err := h.reminderController.CreateReminder(&reminder); err != nil {
+	savedReminder, err := h.reminderController.CreateReminder(&reminder)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, reminder)
+	c.JSON(http.StatusCreated, savedReminder)
 }
 
 func (h *Handler) handleUpdateReminder(c *gin.Context) {

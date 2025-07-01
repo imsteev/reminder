@@ -37,29 +37,30 @@ func (rc *Controller) GetReminders(userID int64) ([]models.Reminder, error) {
 	return reminders, err
 }
 
-func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
+func (rc *Controller) CreateReminder(reminder *models.Reminder) (*models.Reminder, error) {
 	err := rc.db.Create(reminder).Error
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	if reminder.Type == "repeating" && reminder.PeriodMinutes <= 0 {
+		return nil, errors.New("period minutes must be greater than 0")
 	}
 
 	if reminder.Type == "repeating" {
-		if reminder.PeriodMinutes <= 0 {
-			return errors.New("period minutes must be greater than 0")
-		}
 
 		period := time.Duration(reminder.PeriodMinutes) * time.Minute
 
 		periodicJob := river.NewPeriodicJob(
 			river.PeriodicInterval(period),
 			func() (river.JobArgs, *river.InsertOpts) {
-				return workers.PeriodicReminderJobArgs{
-						ReminderID:  int(reminder.ID),
-						PhoneNumber: "", // Will need to get from contact_methods
-						Message:     reminder.Message,
-					}, &river.InsertOpts{
-						ScheduledAt: reminder.StartTime,
-					}
+				args := workers.PeriodicReminderJobArgs{
+					ReminderID: int(reminder.ID),
+				}
+				opts := &river.InsertOpts{
+					ScheduledAt: reminder.StartTime,
+				}
+				return args, opts
 			},
 			nil,
 		)
@@ -67,34 +68,29 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) error {
 		handle := rc.riverClient.PeriodicJobs().Add(periodicJob)
 
 		reminder.JobID = int(handle)
-		err = rc.db.Save(reminder).Error
-		if err != nil {
-			return err
-		}
-
-		fmt.Println("handle", handle)
 
 	} else {
-		insertResult, err := rc.riverClient.Insert(context.Background(), workers.PeriodicReminderJobArgs{
-			ReminderID:  int(reminder.ID),
-			PhoneNumber: "", // Will need to get from contact_methods
-			Message:     reminder.Message,
-		}, &river.InsertOpts{
+		args := workers.OneTimeReminderJobArgs{
+			ReminderID: int(reminder.ID),
+		}
+		opts := &river.InsertOpts{
 			ScheduledAt: reminder.StartTime,
-		})
+		}
+		insertResult, err := rc.riverClient.Insert(context.Background(), args, opts)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		reminder.JobID = int(insertResult.Job.ID)
-		err = rc.db.Save(reminder).Error
-		if err != nil {
-			return err
-		}
 
 	}
 
-	return nil
+	err = rc.db.Save(reminder).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return reminder, nil
 }
 
 func (rc *Controller) UpdateReminder(id int64, reminder *models.Reminder) error {

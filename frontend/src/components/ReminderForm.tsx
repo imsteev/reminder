@@ -44,8 +44,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       name: "",
       reminderType: "repeating",
       deliveryType: "sms",
-      intervalDays: 1,
-      intervalHours: 0,
+      intervalDays: 0,
+      intervalHours: 1,
       intervalMinutes: 0,
     },
   });
@@ -209,16 +209,18 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                   render={
                     <Input
                       type="number"
-                      {...register("intervalDays", {
+                      {...register("intervalMinutes", {
                         min: 0,
+                        max: 59,
                         valueAsNumber: true,
                       })}
                       placeholder="0"
                       min={0}
+                      max={59}
                     />
                   }
                 />
-                <Field.Description>Days</Field.Description>
+                <Field.Description>Minutes</Field.Description>
               </Field.Root>
 
               <Field.Root>
@@ -245,18 +247,16 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
                   render={
                     <Input
                       type="number"
-                      {...register("intervalMinutes", {
+                      {...register("intervalDays", {
                         min: 0,
-                        max: 59,
                         valueAsNumber: true,
                       })}
                       placeholder="0"
                       min={0}
-                      max={59}
                     />
                   }
                 />
-                <Field.Description>Minutes</Field.Description>
+                <Field.Description>Days</Field.Description>
               </Field.Root>
             </div>
           </div>

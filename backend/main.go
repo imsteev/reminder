@@ -8,8 +8,8 @@ import (
 	"reminder-app/config"
 	"reminder-app/controller"
 	gormmodule "reminder-app/db/gorm"
-	"reminder-app/db/riverclient"
 	"reminder-app/handler"
+	"reminder-app/river/riverclient"
 	"reminder-app/workers"
 
 	"github.com/jackc/pgx/v5"

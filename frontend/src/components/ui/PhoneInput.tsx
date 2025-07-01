@@ -1,38 +1,12 @@
 import React, { forwardRef, useEffect, useState } from "react";
 import { Input, type InputProps } from "./Input";
 
-interface PhoneInputProps
-  extends Omit<InputProps, "type" | "value" | "onChange"> {
+interface Props extends Omit<InputProps, "type" | "value" | "onChange"> {
   value?: string;
   onChange?: (value: string) => void;
 }
 
-const formatPhoneNumber = (value: string): string => {
-  const cleaned = value.replace(/\D/g, "");
-
-  if (cleaned.length === 0) {
-    return "";
-  }
-  if (cleaned.length <= 3) {
-    return `(${cleaned}`;
-  }
-  if (cleaned.length <= 6) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
-  }
-
-  const parts = [
-    cleaned.slice(0, 3),
-    cleaned.slice(3, 6),
-    cleaned.slice(6, 10),
-  ];
-  return `(${parts[0]}) ${parts[1]}-${parts[2]}`;
-};
-
-const getUnformattedValue = (value: string): string => {
-  return value.replace(/\D/g, "");
-};
-
-const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
+const PhoneInput = forwardRef<HTMLInputElement, Props>(
   ({ value = "", onChange, onBlur, ...props }, ref) => {
     const [displayValue, setDisplayValue] = useState(() =>
       formatPhoneNumber(value)
@@ -76,6 +50,31 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   }
 );
 
+const formatPhoneNumber = (value: string): string => {
+  const cleaned = value.replace(/\D/g, "");
+
+  if (cleaned.length === 0) {
+    return "";
+  }
+  if (cleaned.length <= 3) {
+    return `(${cleaned}`;
+  }
+  if (cleaned.length <= 6) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+  }
+
+  const parts = [
+    cleaned.slice(0, 3),
+    cleaned.slice(3, 6),
+    cleaned.slice(6, 10),
+  ];
+  return `(${parts[0]}) ${parts[1]}-${parts[2]}`;
+};
+
+const getUnformattedValue = (value: string): string => {
+  return value.replace(/\D/g, "");
+};
+
 PhoneInput.displayName = "PhoneInput";
 
-export { PhoneInput, type PhoneInputProps };
+export { PhoneInput, type Props as PhoneInputProps };

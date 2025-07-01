@@ -97,8 +97,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       periodMinutes = days * 24 * 60 + hours * 60 + minutes;
     }
 
-    const phoneNumber = data.contactValue?.replace(/\D/g, "");
-    const email = data.contactValue;
     const isSms = data.deliveryType === "sms";
 
     createMutation.mutate({
@@ -110,8 +108,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       type: data.reminderType || "repeating",
       period_minutes: periodMinutes,
       delivery_type: data.deliveryType || "sms",
-      phone_number: isSms ? phoneNumber : undefined,
-      email: isSms ? undefined : email,
+      phone_number: isSms ? data.contactValue : undefined,
+      email: !isSms ? data.contactValue : undefined,
     });
   };
 

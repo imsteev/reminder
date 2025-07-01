@@ -17,18 +17,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func StartRiverClient(riverClient *river.Client[pgx.Tx]) {
+func StartRiver(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 	log.Println("Starting River background job client...")
 
 	if err := riverClient.Start(context.Background()); err != nil {
 		log.Fatalf("Failed to start River client: %v", err)
 	}
 
-	log.Println("River client started successfully")
-}
-
-func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 	workers.RestorePeriodicJobs(db, riverClient)
+
+	log.Println("River client started successfully")
 }
 
 func StartReminderService(cfg *config.Config, httpHandler *handler.Handler) {
@@ -51,8 +49,7 @@ func main() {
 		workers.Module,
 		controller.Module,
 		handler.Module,
-		fx.Invoke(StartRiverClient),
-		fx.Invoke(RestorePeriodicJobs),
+		fx.Invoke(StartRiver),
 		fx.Invoke(StartReminderService),
 	)
 	fxApp.Run()

@@ -33,31 +33,45 @@ func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 		}
 
 		period := time.Duration(reminder.PeriodMinutes) * time.Minute
+		log.Printf("Creating periodic job for reminder %d with period %v", reminder.ID, period)
+
+		// Capture the reminder in a closure to avoid issues with loop variables
+		reminderID := int(reminder.ID)
 
 		periodicJob := river.NewPeriodicJob(
 			river.PeriodicInterval(period),
 			func() (river.JobArgs, *river.InsertOpts) {
+				log.Printf("Periodic job triggered for reminder %d", reminderID)
 				return PeriodicReminderJobArgs{
-						ReminderID:  int(reminder.ID),
-						PhoneNumber: "", // Will need to get from contact_methods
-						Message:     reminder.Message,
+						ReminderID: reminderID,
 					}, &river.InsertOpts{
 						ScheduledAt: reminder.StartTime,
+						UniqueOpts: river.UniqueOpts{
+							ByArgs: true,
+						},
 					}
 			},
-			nil,
+			&river.PeriodicJobOpts{
+				RunOnStart: true,
+			},
 		)
 
 		handle := riverClient.PeriodicJobs().Add(periodicJob)
+		log.Printf("Added periodic job for reminder %d, got handle: %d", reminder.ID, handle)
+
+		if handle == 0 {
+			log.Printf("WARNING: Got handle 0 for reminder %d - periodic job may not have been added", reminder.ID)
+			continue
+		}
 
 		// Update the JobID in the database with the new handle
 		err = db.Model(&reminder).Update("job_id", int(handle)).Error
 		if err != nil {
-			fmt.Printf("Failed to update job_id for reminder %d: %v\n", reminder.ID, err)
+			log.Printf("Failed to update job_id for reminder %d: %v", reminder.ID, err)
+		} else {
+			log.Printf("Successfully restored periodic job for reminder %d with handle %d", reminder.ID, handle)
 		}
-
-		fmt.Printf("Restored periodic job for reminder %d with handle %d\n", reminder.ID, handle)
 	}
 
-	fmt.Println("Periodic jobs restored successfully")
+	log.Printf("Successfully restored periodic jobs for %d reminders", len(reminders))
 }

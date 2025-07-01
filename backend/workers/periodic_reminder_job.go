@@ -22,6 +22,11 @@ type PeriodicReminderJobWorker struct {
 }
 
 func (w *PeriodicReminderJobWorker) Work(ctx context.Context, job *river.Job[PeriodicReminderJobArgs]) error {
-	fmt.Printf("PeriodicReminderJobWorker: %v\n", job.Args)
+	fmt.Printf("🔄 EXECUTING PeriodicReminderJobWorker for reminder %d: %s\n", job.Args.ReminderID, job.Args.Message)
+	
+	// Add actual reminder logic here
+	// For now, just log that it executed
+	
+	fmt.Printf("✅ COMPLETED PeriodicReminderJobWorker for reminder %d\n", job.Args.ReminderID)
 	return nil
 }

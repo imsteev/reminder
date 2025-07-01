@@ -9,14 +9,14 @@ interface Props {
   reminders?: Reminder[];
   isLoading: boolean;
   error: any;
-  onDeleteSuccess: () => void;
+  refetch: () => void;
 }
 
 const ReminderList: React.FC<Props> = ({
   reminders,
   isLoading,
   error,
-  onDeleteSuccess,
+  refetch,
 }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -30,7 +30,7 @@ const ReminderList: React.FC<Props> = ({
   const deleteMutation = useMutation({
     mutationFn: deleteReminder,
     onSuccess: () => {
-      onDeleteSuccess();
+      refetch();
     },
   });
 
@@ -53,18 +53,13 @@ const ReminderList: React.FC<Props> = ({
 
   return (
     <div className="w-full">
-      {!sortedReminders?.length ? (
-        <p className="text-gray-500 text-center py-8">
-          No reminders yet. Create your first one!
-        </p>
-      ) : (
-        <Timeline
-          reminders={sortedReminders}
-          currentTime={currentTime}
-          onDelete={(id) => deleteMutation.mutate(id)}
-          isDeleting={deleteMutation.isPending}
-        />
-      )}
+      <Timeline
+        reminders={sortedReminders || []}
+        currentTime={currentTime}
+        onDelete={(id) => deleteMutation.mutate(id)}
+        isDeleting={deleteMutation.isPending}
+        onCreateSuccess={refetch}
+      />
     </div>
   );
 };

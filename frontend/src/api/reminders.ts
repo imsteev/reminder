@@ -24,6 +24,8 @@ export interface CreateReminderRequest {
   type: "one-time" | "repeating";
   period_minutes: number;
   delivery_type: "sms" | "email";
+  phone_number?: string;
+  email?: string;
 }
 
 export interface ContactMethod {

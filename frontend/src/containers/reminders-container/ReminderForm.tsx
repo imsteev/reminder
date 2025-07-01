@@ -1,7 +1,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation } from "@tanstack/react-query";
-import { Button, Field, Input, Textarea } from "../../components/ui";
+import {
+  Button,
+  Field,
+  Input,
+  PhoneInput,
+  Textarea,
+} from "../../components/ui";
 import { createReminder } from "../../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -25,6 +31,8 @@ interface ReminderFormData {
   intervalHours?: number;
   intervalMinutes?: number;
   startTime?: string;
+  phoneNumber?: string;
+  email?: string;
 }
 
 interface ReminderFormProps {
@@ -42,7 +50,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
   } = useForm<ReminderFormData>({
     defaultValues: {
       name: "",
-      reminderType: "repeating",
+      reminderType: "one-time",
       deliveryType: "sms",
       intervalDays: 0,
       intervalHours: 1,
@@ -89,6 +97,10 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       periodMinutes = days * 24 * 60 + hours * 60 + minutes;
     }
 
+    const phoneNumber = data.contactValue?.replace(/\D/g, "");
+    const email = data.contactValue;
+    const isSms = data.deliveryType === "sms";
+
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
       message: data.message || "",
@@ -98,14 +110,13 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
       type: data.reminderType || "repeating",
       period_minutes: periodMinutes,
       delivery_type: data.deliveryType || "sms",
+      phone_number: isSms ? phoneNumber : undefined,
+      email: isSms ? undefined : email,
     });
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 bg-white p-6 rounded-lg shadow border border-gray-200"
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 bg-white">
       <Field.Root>
         <Field.Control
           render={
@@ -160,15 +171,18 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         </Field.Label>
         <Field.Control
           render={
-            <Input
-              type={deliveryType === "sms" ? "tel" : "email"}
-              {...register("contactValue")}
-              placeholder={
-                deliveryType === "sms"
-                  ? UI_TEXT.PHONE_PLACEHOLDER
-                  : "user@example.com"
-              }
-            />
+            deliveryType === "sms" ? (
+              <PhoneInput
+                value={watch("contactValue")}
+                onChange={(value) => setValue("contactValue", value)}
+              />
+            ) : (
+              <Input
+                type="email"
+                {...register("contactValue")}
+                placeholder="user@example.com"
+              />
+            )
           }
         />
       </Field.Root>
@@ -319,7 +333,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute,
+                  TIME_PRESETS.TOMORROW_9AM.minute
                 )
               }
               className="rounded-full"

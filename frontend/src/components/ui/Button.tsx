@@ -18,10 +18,10 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     { className, variant = "primary", size = "md", children, ...props },
-    ref,
+    ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
+      "cursor-pointer inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
 
     const variants = {
       primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
@@ -31,7 +31,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "border border-gray-300 bg-transparent hover:bg-gray-50 focus:ring-gray-500",
       ghost: "bg-transparent hover:bg-gray-100 focus:ring-gray-500",
       destructive: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-      blue: "bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 focus:ring-blue-500",
+      blue: "bg-blue-100 hover:bg-blue-200 text-blue-700 border border-blue-200 focus:ring-blue-500",
       green:
         "bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 focus:ring-green-500",
       purple:
@@ -53,7 +53,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {children}
       </button>
     );
-  },
+  }
 );
 
 Button.displayName = "Button";

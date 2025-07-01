@@ -104,7 +104,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-4 bg-white p-6 rounded-lg shadow"
+      className="space-y-4 bg-white p-6 rounded-lg shadow border border-gray-200"
     >
       <Field.Root>
         <Field.Control

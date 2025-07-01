@@ -33,7 +33,7 @@ func New(p Params) *Controller {
 func (rc *Controller) GetReminders(userID int64) ([]models.Reminder, error) {
 	fmt.Println("GetReminders", userID)
 	var reminders []models.Reminder
-	err := rc.db.Where("user_id = ?", userID).Find(&reminders).Error
+	err := rc.db.Where("user_id = ?", userID).Order("start_time").Find(&reminders).Error
 	return reminders, err
 }
 

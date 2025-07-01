@@ -1,13 +1,12 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Field, Input, Textarea } from "../../components/ui";
 import {
-  Button,
-  Field,
-  Input,
-  Textarea,
-} from "../../components/ui";
-import { createReminder, getContactMethods, createContactMethod } from "../../api/reminders";
+  createReminder,
+  getContactMethods,
+  createContactMethod,
+} from "../../api/reminders";
 import {
   getCurrentDateTimeString,
   getDateTimeStringInMinutes,
@@ -275,18 +274,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         {contactMethods.length > 0 && (
           <div className="space-y-3">
             <div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={!createNewContactMethod}
-                  onChange={() => setValue("createNewContactMethod", false)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium">Use existing contact method</span>
-              </label>
-              
               {!createNewContactMethod && (
-                <div className="mt-2 ml-6">
+                <div className="mt-2">
                   <select
                     {...register("contactMethodID", { valueAsNumber: true })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -294,34 +283,25 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                     <option value="">Select a contact method</option>
                     {contactMethods.map((method) => (
                       <option key={method.id} value={method.id}>
-                        {method.description || `${method.type}: ${method.value}`}
+                        {method.description ||
+                          `${method.type}: ${method.value}`}
                       </option>
                     ))}
                   </select>
                 </div>
               )}
             </div>
-            
-            <div>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={createNewContactMethod}
-                  onChange={() => setValue("createNewContactMethod", true)}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium">Create new contact method</span>
-              </label>
-            </div>
           </div>
         )}
-        
+
         {(contactMethods.length === 0 || createNewContactMethod) && (
           <div className="space-y-3 mt-3">
             {contactMethods.length === 0 && (
-              <p className="text-sm text-gray-600">No contact methods found. Create your first one:</p>
+              <p className="text-sm text-gray-600">
+                No contact methods found. Create your first one:
+              </p>
             )}
-            
+
             <div className="flex gap-3">
               <label className="flex items-center gap-2">
                 <input
@@ -342,13 +322,17 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                 <span className="text-sm">Phone</span>
               </label>
             </div>
-            
+
             <Input
               {...register("newContactMethodValue")}
-              placeholder={newContactMethodType === "email" ? "user@example.com" : "+1234567890"}
+              placeholder={
+                newContactMethodType === "email"
+                  ? "user@example.com"
+                  : "+1234567890"
+              }
               type={newContactMethodType === "email" ? "email" : "tel"}
             />
-            
+
             <Input
               {...register("newContactMethodDescription")}
               placeholder="Description (e.g., Personal email, Work phone)"

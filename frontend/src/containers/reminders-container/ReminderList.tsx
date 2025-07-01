@@ -51,6 +51,10 @@ const ReminderList: React.FC<Props> = ({
       getNextOccurrence(b, currentTime).getTime()
   );
 
+  if (!isLoading && !sortedReminders?.length) {
+    return <div className="text-center text-gray-500 py-24">No reminders</div>;
+  }
+
   return (
     <div className="w-full">
       <Timeline

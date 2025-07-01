@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button, Dialog, DialogBody, DialogHeader, DialogTitle } from "./ui";
 import ReminderForm from "../containers/reminders-container/ReminderForm";
 
@@ -8,6 +9,8 @@ interface Props {
 
 export default function NavBar({ refetchReminders }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const location = useLocation();
+
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="container mx-auto px-4">
@@ -24,7 +27,28 @@ export default function NavBar({ refetchReminders }: Props) {
           </div>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8"></div>
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              to="/"
+              className={`font-medium transition-colors ${
+                location.pathname === "/"
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Reminders
+            </Link>
+            <Link
+              to="/settings"
+              className={`font-medium transition-colors ${
+                location.pathname === "/settings"
+                  ? "text-blue-600"
+                  : "text-gray-600 hover:text-blue-600"
+              }`}
+            >
+              Settings
+            </Link>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-4">
@@ -35,7 +59,7 @@ export default function NavBar({ refetchReminders }: Props) {
               size="sm"
             >
               <span className="mr-2">+</span>
-              New Reminder
+              Reminder
             </Button>
 
             {/* User Profile */}

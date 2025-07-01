@@ -34,13 +34,12 @@ export default function ReminderCard({
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <p
-                className={cn(
-                  "font-medium",
-                  !reminder.message && "text-gray-600"
-                )}
-              >
-                {reminder.message || "-"}
+              <span className="text-xs text-gray-500">#{reminder.id}</span>
+              <p className={cn("font-medium")}>
+                {reminder.name ||
+                  reminder.message?.slice(0, 30) +
+                    (reminder.message?.length > 30 ? "..." : "") ||
+                  "-"}
               </p>
               {reminder.type === "repeating" && (
                 <span

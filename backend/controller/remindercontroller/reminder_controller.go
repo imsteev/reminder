@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reminder-app/models"
 	"reminder-app/workers"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -50,25 +50,31 @@ func (rc *Controller) CreateReminder(reminder *models.Reminder) (*models.Reminde
 	}
 
 	if isRepeating {
-		args := workers.PeriodicReminderJobArgs{
+		args := workers.ReminderJobArgs{
 			ReminderID: int(reminder.ID),
 		}
 		opts := &river.InsertOpts{
 			ScheduledAt: reminder.StartTime,
+			UniqueOpts: river.UniqueOpts{
+				ByArgs: true,
+			},
 		}
 		job := river.NewPeriodicJob(
 			river.PeriodicInterval(time.Duration(reminder.PeriodMinutes)*time.Minute),
 			func() (river.JobArgs, *river.InsertOpts) { return args, opts },
-			nil,
+			&river.PeriodicJobOpts{
+				RunOnStart: true,
+			},
 		)
 
+		// This adds a handle in memory, not in the database
 		handle := rc.riverClient.PeriodicJobs().Add(job)
 
 		fmt.Println("🔄 ADDED PERIODIC JOB", handle)
 		reminder.JobID = int(handle)
 
 	} else {
-		args := workers.OneTimeReminderJobArgs{
+		args := workers.ReminderJobArgs{
 			ReminderID: int(reminder.ID),
 		}
 		opts := &river.InsertOpts{
@@ -102,12 +108,10 @@ func (rc *Controller) DeleteReminder(id int64) error {
 		return err
 	}
 
-	if reminder.JobID > 0 {
-		if _, err := rc.riverClient.JobCancel(context.Background(), int64(reminder.JobID)); err != nil {
-			return err
-		}
+	if reminder.Type == "repeating" {
+		rc.riverClient.PeriodicJobs().Remove(rivertype.PeriodicJobHandle(reminder.JobID))
 	} else {
-		log.Println("No job found for reminder", reminder.ID)
+		rc.riverClient.JobDelete(context.Background(), int64(reminder.JobID))
 	}
 
 	// Delete the reminder from database

@@ -6,6 +6,7 @@ const API_URL = `${API_BASE_URL}/api`;
 export interface Reminder {
   id: number;
   user_id: number;
+  name: string;
   message: string;
   start_time: string;
   type: "one-time" | "repeating";
@@ -38,7 +39,7 @@ export const getReminders = async (userId: number): Promise<Reminder[]> => {
 };
 
 export const createReminder = async (
-  reminder: CreateReminderRequest,
+  reminder: CreateReminderRequest
 ): Promise<Reminder> => {
   const response = await axios.post(`${API_URL}/reminders`, reminder);
   return response.data;
@@ -46,7 +47,7 @@ export const createReminder = async (
 
 export const updateReminder = async (
   id: number,
-  reminder: Partial<Reminder>,
+  reminder: Partial<Reminder>
 ): Promise<void> => {
   await axios.put(`${API_URL}/reminders/${id}`, reminder);
 };

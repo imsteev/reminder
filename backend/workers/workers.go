@@ -20,10 +20,7 @@ type Params struct {
 
 func New(p Params) *river.Workers {
 	workers := river.NewWorkers()
-	river.AddWorker(workers, &PeriodicReminderJobWorker{
-		GormDB: p.DB,
-	})
-	river.AddWorker(workers, &OneTimeReminderJobWorker{
+	river.AddWorker(workers, &ReminderJobWorker{
 		GormDB: p.DB,
 	})
 	return workers
@@ -53,7 +50,7 @@ func RestorePeriodicJobs(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 			river.PeriodicInterval(period),
 			func() (river.JobArgs, *river.InsertOpts) {
 				log.Printf("Periodic job triggered for reminder %d", reminderID)
-				return PeriodicReminderJobArgs{
+				return ReminderJobArgs{
 						ReminderID: reminderID,
 					}, &river.InsertOpts{
 						ScheduledAt: reminder.StartTime,

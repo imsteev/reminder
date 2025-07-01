@@ -78,7 +78,7 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateReminder(c *gin.Context) {
-	var reminder models.Reminder
+	var reminder remindercontroller.CreateReminderRequest
 	if err := c.ShouldBindJSON(&reminder); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

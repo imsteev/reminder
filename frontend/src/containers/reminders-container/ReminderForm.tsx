@@ -141,8 +141,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
 
       <Field.Root>
         <Field.Label>Delivery Method</Field.Label>
-        <div className="flex gap-6">
-          <label className="flex items-center gap-2">
+        <div className="flex gap-3">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
             <input
               type="radio"
               value="sms"
@@ -151,7 +151,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             />
             <span className="text-sm">SMS</span>
           </label>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
             <input
               type="radio"
               value="email"
@@ -187,8 +187,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
 
       <Field.Root>
         <Field.Label>Reminder Type</Field.Label>
-        <div className="flex gap-6">
-          <label className="flex items-center gap-2">
+        <div className="flex gap-3">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
             <input
               type="radio"
               value="one-time"
@@ -197,7 +197,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
             />
             <span className="text-sm">One-time</span>
           </label>
-          <label className="flex items-center gap-2">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
             <input
               type="radio"
               value="repeating"
@@ -331,7 +331,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute
+                  TIME_PRESETS.TOMORROW_9AM.minute,
                 )
               }
               className="rounded-full"

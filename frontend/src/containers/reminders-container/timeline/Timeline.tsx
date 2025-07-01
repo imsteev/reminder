@@ -47,7 +47,6 @@ export default function Timeline({
           const isUpcoming = reminderTime > currentTime;
           return (
             <div key={reminder.id} className="flex items-center gap-2">
-              <TimelineDot isUpcoming={isUpcoming} type={reminder.type} />
               <ReminderCard
                 reminder={reminder}
                 reminderTime={reminderTime}

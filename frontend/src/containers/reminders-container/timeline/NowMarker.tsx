@@ -9,8 +9,7 @@ interface Props {
 export default function NowMarker({ currentTime }: Props) {
   return (
     <div className="flex items-center">
-      <TimelineDot className="bg-red-500" />
-      <div className="ml-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+      <div className=" bg-red-50 border border-red-200 rounded-lg px-4 py-2">
         <div className="flex items-center gap-2">
           <span className="text-red-600 font-semibold text-sm">NOW</span>
           <span className="text-red-500 text-xs">

@@ -21,7 +21,8 @@
     ```
 
   - One exported component per file
-  - Hoist out functions that do not depend on any component state/props
+  - Generally, functions and variables should live close to where they get used. So if a component accepts a prop that doesn't depend on anything in the parent, then it makes to just move that into the child component itself.
+  - Do not declare functions that don't depend on any component state/props inside the component itself. Define it outside a component so that it's reference is stable.
 
 - State management
 

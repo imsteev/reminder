@@ -7,7 +7,9 @@ import {
   formatDistanceToNow,
   differenceInMinutes,
   isBefore,
+  addMinutes,
 } from "date-fns";
+import { cn } from "../utils/cn";
 
 interface ReminderListProps {
   reminders?: Reminder[];
@@ -43,6 +45,34 @@ const ReminderList: React.FC<ReminderListProps> = ({
     },
   });
 
+  const getNextOccurrence = (reminder: Reminder) => {
+    const startTime = new Date(reminder.start_time);
+
+    if (reminder.type === "one-time") {
+      return startTime;
+    }
+
+    // For repeating reminders, calculate the next occurrence
+    const now = currentTime;
+    const periodMs = reminder.period_minutes * 60 * 1000;
+
+    if (startTime > now) {
+      // If start time is in the future, return start time
+      return startTime;
+    }
+
+    // Calculate how many periods have passed since start time
+    const timeSinceStart = now.getTime() - startTime.getTime();
+    const periodsPassed = Math.floor(timeSinceStart / periodMs);
+
+    // Calculate next occurrence
+    const nextOccurrence = new Date(
+      startTime.getTime() + (periodsPassed + 1) * periodMs,
+    );
+
+    return nextOccurrence;
+  };
+
   const isReminderPast = (reminder: Reminder) => {
     if (reminder.type === "repeating") return false;
     return new Date(reminder.start_time) < new Date();
@@ -76,25 +106,31 @@ const ReminderList: React.FC<ReminderListProps> = ({
     if (completedOnly) {
       return reminder.type === "one-time" && isReminderPast(reminder);
     }
+    // Always show repeating reminders, only filter one-time reminders based on showPast
+    if (reminder.type === "repeating") {
+      return true;
+    }
     return showPast || !isReminderPast(reminder);
   });
 
   const activeReminders = showPast
     ? filteredReminders
-    : filteredReminders?.filter((reminder) => !isReminderPast(reminder));
+    : filteredReminders?.filter(
+        (reminder) =>
+          reminder.type === "repeating" || !isReminderPast(reminder),
+      );
 
   const pastReminderCount =
     filteredReminders?.filter(isReminderPast).length || 0;
 
-  // Sort reminders by start time for timeline
+  // Sort reminders by next occurrence time for timeline
   const sortedReminders = [...(activeReminders || [])].sort(
-    (a, b) =>
-      new Date(a.start_time).getTime() - new Date(b.start_time).getTime(),
+    (a, b) => getNextOccurrence(a).getTime() - getNextOccurrence(b).getTime(),
   );
 
   // Find where "now" should be inserted in the timeline
   const nowIndex = sortedReminders.findIndex(
-    (reminder) => new Date(reminder.start_time) > currentTime,
+    (reminder) => getNextOccurrence(reminder) > currentTime,
   );
   const showNowMarker = sortedReminders.length > 0;
 
@@ -125,7 +161,7 @@ const ReminderList: React.FC<ReminderListProps> = ({
 
           <div className="space-y-6">
             {sortedReminders.map((reminder, index) => {
-              const reminderTime = new Date(reminder.start_time);
+              const reminderTime = getNextOccurrence(reminder);
               const timelineInfo = getTimelinePosition(reminderTime);
               const isUpcoming = reminderTime > currentTime;
 
@@ -151,10 +187,10 @@ const ReminderList: React.FC<ReminderListProps> = ({
                   )}
 
                   {/* Reminder card */}
-                  <div className="relative flex items-start">
+                  <div className="relative flex items-center">
                     {/* Timeline dot */}
                     <div
-                      className={`w-4 h-4 rounded-full border-2 border-white shadow-md z-10 ${
+                      className={`w-4 h-4 rounded-full border-2 border-white shadow-md z-10 flex-shrink-0 ${
                         isUpcoming
                           ? reminder.type === "repeating"
                             ? "bg-blue-500"
@@ -177,42 +213,42 @@ const ReminderList: React.FC<ReminderListProps> = ({
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <p
-                              className={`font-medium ${isUpcoming ? "text-gray-900" : "text-gray-600"}`}
+                              className={cn(
+                                "font-medium",
+                                !reminder.message && "text-gray-600",
+                              )}
                             >
-                              {reminder.message}
+                              {reminder.message || "-"}
                             </p>
-                            <span
-                              className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                reminder.type === "repeating"
-                                  ? isUpcoming
+                            {reminder.type === "repeating" && (
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  isUpcoming
                                     ? "bg-blue-100 text-blue-800"
                                     : "bg-gray-200 text-gray-600"
-                                  : isUpcoming
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-gray-200 text-gray-600"
-                              }`}
-                            >
-                              {reminder.type === "repeating"
-                                ? "Repeats"
-                                : "One-time"}
-                            </span>
+                                }`}
+                              >
+                                Repeats every {reminder.period_minutes}m
+                              </span>
+                            )}
                           </div>
 
                           <div className="text-sm space-y-1">
                             <div
-                              className={`flex items-center gap-2 ${isUpcoming ? "text-gray-700" : "text-gray-500"}`}
+                              className={`flex items-center gap-2 ${
+                                isUpcoming ? "text-gray-700" : "text-gray-500"
+                              }`}
                             >
-                              <span className="font-medium">
-                                {timelineInfo.distance}
-                              </span>
                               {reminder.type === "repeating" && (
-                                <span className="text-xs">
-                                  • Every {reminder.period_minutes} min
+                                <span className="text-xs text-blue-600">
+                                  Next occurrence in {timelineInfo.distance}
                                 </span>
                               )}
                             </div>
                             <div
-                              className={`text-xs ${isUpcoming ? "text-gray-500" : "text-gray-400"}`}
+                              className={`text-xs ${
+                                isUpcoming ? "text-gray-500" : "text-gray-400"
+                              }`}
                             >
                               {format(reminderTime, "MMM d, yyyy h:mm a")}
                             </div>

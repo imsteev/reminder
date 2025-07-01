@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Card, CardContent, PhoneInput, Input, Button } from "./ui";
+import { toast } from "sonner";
 import {
   type CreateContactMethodRequest,
-  type ContactMethod,
   createContactMethod,
 } from "../api/reminders";
-import { useMutation, type UseMutationResult } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { DEFAULT_USER_ID } from "../constants";
 
 interface Props {
@@ -23,6 +23,7 @@ export default function ContactMethodForm({ onSuccess, onCancel }: Props) {
   const createMutation = useMutation({
     mutationFn: createContactMethod,
     onSuccess: () => {
+      toast.success("Contact method created");
       setFormData({
         user_id: DEFAULT_USER_ID,
         type: "email",
@@ -30,6 +31,11 @@ export default function ContactMethodForm({ onSuccess, onCancel }: Props) {
         description: "",
       });
       onSuccess();
+    },
+    onError: (error) => {
+      toast.error("Failed to create contact method", {
+        description: error.message,
+      });
     },
   });
 

@@ -4,6 +4,7 @@ import { Button } from "../../components/ui";
 import { deleteReminder, type Reminder } from "../../api/reminders";
 import Timeline from "./timeline/Timeline";
 import { getNextOccurrence } from "./timeline/utils";
+import { toast } from "sonner";
 
 interface Props {
   reminders?: Reminder[];
@@ -30,7 +31,13 @@ const ReminderList: React.FC<Props> = ({
   const deleteMutation = useMutation({
     mutationFn: deleteReminder,
     onSuccess: () => {
+      toast.success("Reminder deleted");
       refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete reminder", {
+        description: error.message,
+      });
     },
   });
 

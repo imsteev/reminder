@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, CardContent, Input, Field, PhoneInput } from "./ui";
+import { toast } from "sonner";
 import {
   getContactMethods,
-  createContactMethod,
   updateContactMethod,
   deleteContactMethod,
-  type ContactMethod,
-  type CreateContactMethodRequest,
   type UpdateContactMethodRequest,
 } from "../api/reminders";
 import { DEFAULT_USER_ID } from "../constants";
@@ -42,15 +40,27 @@ export default function ContactMethodsManager({
       data: UpdateContactMethodRequest;
     }) => updateContactMethod(id, data),
     onSuccess: () => {
+      toast.success("Contact method updated");
       refetch();
       setEditingId(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to update contact method", {
+        description: error.message,
+      });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteContactMethod,
     onSuccess: () => {
+      toast.success("Contact method deleted");
       refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete contact method", {
+        description: error.message,
+      });
     },
   });
 

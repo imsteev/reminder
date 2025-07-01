@@ -13,14 +13,14 @@ import (
 
 type Handler struct {
 	*gin.Engine
-	reminderController     *remindercontroller.Controller
+	reminderController      *remindercontroller.Controller
 	contactMethodController *contactmethodcontroller.Controller
 }
 
 type Params struct {
 	fx.In
 
-	ReminderController     *remindercontroller.Controller
+	ReminderController      *remindercontroller.Controller
 	ContactMethodController *contactmethodcontroller.Controller
 }
 
@@ -55,7 +55,7 @@ func (h *Handler) init() *Handler {
 	grp.POST("/reminders", h.handleCreateReminder)
 	grp.PUT("/reminders/:id", h.handleUpdateReminder)
 	grp.DELETE("/reminders/:id", h.handleDeleteReminder)
-	
+
 	grp.GET("/contact-methods", h.handleGetContactMethods)
 	grp.POST("/contact-methods", h.handleCreateContactMethod)
 	grp.PUT("/contact-methods/:id", h.handleUpdateContactMethod)
@@ -132,7 +132,7 @@ func (h *Handler) handleDeleteReminder(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "reminder deleted successfully"})
+	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "reminder deleted"})
 }
 
 func (h *Handler) handleGetContactMethods(c *gin.Context) {
@@ -203,5 +203,5 @@ func (h *Handler) handleDeleteContactMethod(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "contact method deleted successfully"})
+	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "contact method deleted"})
 }

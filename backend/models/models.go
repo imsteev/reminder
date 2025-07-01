@@ -14,12 +14,12 @@ type BaseModel struct {
 }
 
 type User struct {
-	BaseModel
-	Name string `json:"name" gorm:"not null"`
+	BaseModel `tstype:",extends"`
+	Name      string `json:"name" gorm:"not null"`
 }
 
 type ContactMethod struct {
-	BaseModel
+	BaseModel   `tstype:",extends"`
 	UserID      int64  `json:"user_id" gorm:"not null"`
 	Type        string `json:"type" gorm:"not null;type:contact_type"`
 	Value       string `json:"value" gorm:"not null"`
@@ -27,7 +27,7 @@ type ContactMethod struct {
 }
 
 type Reminder struct {
-	BaseModel
+	BaseModel       `tstype:",extends"`
 	UserID          int64     `json:"user_id" gorm:"not null"`
 	RiverJobID      int       `json:"river_job_id"`
 	ContactMethodID int64     `json:"contact_method_id" gorm:"not null"`

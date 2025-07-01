@@ -9,19 +9,16 @@ export interface BaseModel {
   updated_at: string;
   deleted_at: string | null;
 }
-export interface User {
-  BaseModel: BaseModel;
+export interface User extends BaseModel {
   name: string;
 }
-export interface ContactMethod {
-  BaseModel: BaseModel;
+export interface ContactMethod extends BaseModel {
   user_id: number /* int64 */;
   type: string;
   value: string;
   description: string;
 }
-export interface Reminder {
-  BaseModel: BaseModel;
+export interface Reminder extends BaseModel {
   user_id: number /* int64 */;
   river_job_id: number /* int */;
   contact_method_id: number /* int64 */;

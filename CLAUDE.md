@@ -4,6 +4,7 @@
 - Always run prettier on JSX/TSX/CSS/HTML files
 - Never check in binary files into the codebase
 - Always trim whitespace for lines of code. If a file doesnt end on a newline, add one.
+- Don't add comments that are redundant and describe literally what the code is doing. The exception is when writing HTML/React/Component markup, where it's useful to label at a high leve what something is. However if there's a lot of lines of code, it would be more self-documenting to extract out a a component.
 
 ### React
 

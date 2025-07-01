@@ -10,6 +10,7 @@ interface ReminderCardProps {
   timelineInfo: { distance: string };
   isUpcoming: boolean;
   onDelete: (id: number) => void;
+  onReschedule?: (reminder: Reminder) => void;
   isDeleting: boolean;
 }
 
@@ -19,6 +20,7 @@ export default function ReminderCard({
   timelineInfo,
   isUpcoming,
   onDelete,
+  onReschedule,
   isDeleting,
 }: ReminderCardProps) {
   return (
@@ -77,15 +79,28 @@ export default function ReminderCard({
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(reminder.id)}
-            disabled={isDeleting}
-            className="ml-4 text-red-600 hover:text-red-800"
-          >
-            🗑️
-          </Button>
+          <div className="flex items-center gap-2 ml-4">
+            {!isUpcoming && reminder.type === "one-time" && onReschedule && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onReschedule(reminder)}
+                disabled={isDeleting}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                🔄
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(reminder.id)}
+              disabled={isDeleting}
+              className="text-red-600 hover:text-red-800"
+            >
+              🗑️
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

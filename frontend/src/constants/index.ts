@@ -28,7 +28,7 @@ export const FORM_DEFAULTS = {
 export const UI_TEXT = {
   START_TIME_LABEL: "When should we start sending reminders?",
   QUICK_SELECT_LABEL: "Quick select:",
-  CUSTOM_TIME_LABEL: "Date (local time)",
+  CUSTOM_TIME_LABEL: "Date",
   PHONE_PLACEHOLDER: "+1234567890",
   MESSAGE_PLACEHOLDER: "Message",
 } as const;

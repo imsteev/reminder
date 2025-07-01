@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reminder-app/controller/protocol"
 	"reminder-app/models"
 	"reminder-app/workers"
 	"time"
@@ -31,24 +32,36 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB, riverClient: p.River}
 }
 
-func (rc *Controller) GetReminders(userID int64) ([]models.Reminder, error) {
-	var reminders []models.Reminder
-	err := rc.db.Where("user_id = ?", userID).Order("start_time").Find(&reminders).Error
-	return reminders, err
+func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.Reminder, error) {
+	var dbReminders []models.Reminder
+	query := rc.db.Where("user_id = ?", userID)
+	
+	if !includePast {
+		// For one-time reminders, exclude past ones. For repeating, always include
+		query = query.Where("type = 'repeating' OR (type = 'one-time' AND start_time > ?)", time.Now())
+	}
+	
+	err := query.Order("start_time").Find(&dbReminders).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var protocolReminders []protocol.Reminder
+	for _, dbReminder := range dbReminders {
+		protocolReminders = append(protocolReminders, protocol.Reminder{
+			ID:            int64(dbReminder.ID),
+			UserID:        dbReminder.UserID,
+			Message:       dbReminder.Message,
+			StartTime:     dbReminder.StartTime,
+			Type:          dbReminder.Type,
+			PeriodMinutes: dbReminder.PeriodMinutes,
+			DeliveryType:  dbReminder.DeliveryType,
+		})
+	}
+	return protocolReminders, err
 }
 
-type CreateReminderRequest struct {
-	UserID        int64     `json:"user_id"`
-	Message       string    `json:"message"`
-	StartTime     time.Time `json:"start_time"`
-	Type          string    `json:"type"`
-	PeriodMinutes int64     `json:"period_minutes"`
-	DeliveryType  string    `json:"delivery_type"`
-	PhoneNumber   *string   `json:"phone_number"`
-	Email         *string   `json:"email"`
-}
-
-func (rc *Controller) CreateReminder(reminder *CreateReminderRequest) (*models.Reminder, error) {
+func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (*models.Reminder, error) {
 	dbReminder := &models.Reminder{
 		UserID:        reminder.UserID,
 		Message:       reminder.Message,
@@ -75,16 +88,11 @@ func (rc *Controller) CreateReminder(reminder *CreateReminderRequest) (*models.R
 		}
 		opts := &river.InsertOpts{
 			ScheduledAt: dbReminder.StartTime,
-			UniqueOpts: river.UniqueOpts{
-				ByArgs: true,
-			},
 		}
 		job := river.NewPeriodicJob(
 			river.PeriodicInterval(time.Duration(dbReminder.PeriodMinutes)*time.Minute),
 			func() (river.JobArgs, *river.InsertOpts) { return args, opts },
-			&river.PeriodicJobOpts{
-				RunOnStart: true,
-			},
+			nil,
 		)
 
 		// This adds a handle in memory, not in the database

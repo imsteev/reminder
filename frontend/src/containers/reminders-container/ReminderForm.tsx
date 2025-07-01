@@ -37,9 +37,13 @@ interface ReminderFormData {
 
 interface ReminderFormProps {
   onSuccess?: () => void;
+  initialData?: Partial<ReminderFormData>;
 }
 
-const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
+const ReminderForm: React.FC<ReminderFormProps> = ({
+  onSuccess,
+  initialData,
+}) => {
   const {
     register,
     handleSubmit,
@@ -49,12 +53,15 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
     formState: {},
   } = useForm<ReminderFormData>({
     defaultValues: {
-      name: "",
-      reminderType: "one-time",
-      deliveryType: "sms",
-      intervalDays: 0,
-      intervalHours: 1,
-      intervalMinutes: 0,
+      name: initialData?.name || "",
+      message: initialData?.message || "",
+      reminderType: initialData?.reminderType || "one-time",
+      deliveryType: initialData?.deliveryType || "sms",
+      intervalDays: initialData?.intervalDays || 0,
+      intervalHours: initialData?.intervalHours || 1,
+      intervalMinutes: initialData?.intervalMinutes || 0,
+      startTime: initialData?.startTime || "",
+      contactValue: initialData?.contactValue || "",
     },
   });
 
@@ -83,8 +90,10 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
 
   // Set default start time
   React.useEffect(() => {
-    setStartTimeIn(DEFAULT_START_DELAY_MINUTES);
-  }, []);
+    if (!initialData?.startTime) {
+      setStartTimeIn(DEFAULT_START_DELAY_MINUTES);
+    }
+  }, [initialData?.startTime]);
 
   const onSubmit = (data: ReminderFormData) => {
     const isOneTime = data.reminderType === "one-time";
@@ -122,69 +131,11 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               {...register("name")}
               className="w-full"
               placeholder="Name"
+              autoFocus
             />
           }
         />
       </Field.Root>
-
-      <Field.Root>
-        <Field.Control
-          render={
-            <Textarea
-              {...register("message")}
-              placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
-              rows={3}
-            />
-          }
-        />
-      </Field.Root>
-
-      <Field.Root>
-        <Field.Label>Delivery Method</Field.Label>
-        <div className="flex gap-3">
-          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-            <input
-              type="radio"
-              value="sms"
-              {...register("deliveryType")}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="text-sm">SMS</span>
-          </label>
-          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-            <input
-              type="radio"
-              value="email"
-              {...register("deliveryType")}
-              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-            />
-            <span className="text-sm">Email</span>
-          </label>
-        </div>
-      </Field.Root>
-
-      <Field.Root>
-        <Field.Label>
-          {deliveryType === "sms" ? "Phone Number" : "Email Address"}
-        </Field.Label>
-        <Field.Control
-          render={
-            deliveryType === "sms" ? (
-              <PhoneInput
-                value={watch("contactValue")}
-                onChange={(value) => setValue("contactValue", value)}
-              />
-            ) : (
-              <Input
-                type="email"
-                {...register("contactValue")}
-                placeholder="user@example.com"
-              />
-            )
-          }
-        />
-      </Field.Root>
-
       <Field.Root>
         <Field.Label>Reminder Type</Field.Label>
         <div className="flex gap-3">
@@ -278,6 +229,64 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
         </div>
       )}
 
+      <Field.Root>
+        <Field.Control
+          render={
+            <Textarea
+              {...register("message")}
+              placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
+              rows={3}
+            />
+          }
+        />
+      </Field.Root>
+
+      <Field.Root>
+        <Field.Label>Delivery Method</Field.Label>
+        <div className="flex gap-3">
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+            <input
+              type="radio"
+              value="sms"
+              {...register("deliveryType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm">SMS</span>
+          </label>
+          <label className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
+            <input
+              type="radio"
+              value="email"
+              {...register("deliveryType")}
+              className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+            />
+            <span className="text-sm">Email</span>
+          </label>
+        </div>
+      </Field.Root>
+
+      <Field.Root>
+        <Field.Label>
+          {deliveryType === "sms" ? "Phone Number" : "Email Address"}
+        </Field.Label>
+        <Field.Control
+          render={
+            deliveryType === "sms" ? (
+              <PhoneInput
+                value={watch("contactValue")}
+                onChange={(value) => setValue("contactValue", value)}
+              />
+            ) : (
+              <Input
+                type="email"
+                {...register("contactValue")}
+                placeholder="user@example.com"
+              />
+            )
+          }
+        />
+      </Field.Root>
+
       <div>
         <label
           htmlFor="startTime"
@@ -331,7 +340,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({ onSuccess }) => {
               onClick={() =>
                 setStartTimeTomorrow(
                   TIME_PRESETS.TOMORROW_9AM.hour,
-                  TIME_PRESETS.TOMORROW_9AM.minute,
+                  TIME_PRESETS.TOMORROW_9AM.minute
                 )
               }
               className="rounded-full"

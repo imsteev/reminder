@@ -37,17 +37,14 @@ const DialogOverlay = React.forwardRef<HTMLDivElement, DialogOverlayProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
-        className={cn(
-          "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm",
-          className,
-        )}
+        className={cn("fixed inset-0 z-50 bg-black/65", className)}
         ref={ref}
         {...props}
       >
         {children}
       </div>
     );
-  },
+  }
 );
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
@@ -58,7 +55,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50",
           "w-full max-w-lg max-h-[85vh] overflow-auto",
           "bg-white rounded-lg shadow-lg border border-gray-200",
-          className,
+          className
         )}
         ref={ref}
         {...props}
@@ -66,7 +63,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
@@ -80,7 +77,7 @@ const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
@@ -89,7 +86,7 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
       <h2
         className={cn(
           "text-lg font-semibold leading-none tracking-tight text-gray-900",
-          className,
+          className
         )}
         ref={ref}
         {...props}
@@ -97,7 +94,7 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
         {children}
       </h2>
     );
-  },
+  }
 );
 
 const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
@@ -107,7 +104,7 @@ const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
@@ -116,7 +113,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
       <div
         className={cn(
           "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-4",
-          className,
+          className
         )}
         ref={ref}
         {...props}
@@ -124,7 +121,7 @@ const DialogFooter = React.forwardRef<HTMLDivElement, DialogFooterProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 export default function Dialog({

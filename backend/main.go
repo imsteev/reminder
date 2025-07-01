@@ -24,7 +24,9 @@ func StartRiver(db *gorm.DB, riverClient *river.Client[pgx.Tx]) {
 		log.Fatalf("Failed to start River client: %v", err)
 	}
 
-	workers.RestorePeriodicJobs(db, riverClient)
+	if err := workers.RestorePeriodicJobs(db, riverClient); err != nil {
+		log.Fatalf("Failed to restore periodic jobs: %v", err)
+	}
 
 	log.Println("River client started successfully")
 }

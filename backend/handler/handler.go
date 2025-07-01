@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"reminder-app/controller/protocol"
 	"reminder-app/controller/remindercontroller"
 	"reminder-app/models"
 	"strconv"
@@ -68,7 +69,10 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 		return
 	}
 
-	reminders, err := h.reminderController.GetReminders(userID)
+	includePastStr := c.Query("include_past")
+	includePast := includePastStr == "true"
+
+	reminders, err := h.reminderController.GetReminders(userID, includePast)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -78,7 +82,7 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateReminder(c *gin.Context) {
-	var reminder remindercontroller.CreateReminderRequest
+	var reminder protocol.CreateReminderRequest
 	if err := c.ShouldBindJSON(&reminder); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

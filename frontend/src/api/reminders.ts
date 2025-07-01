@@ -35,8 +35,8 @@ export interface ContactMethod {
   description: string;
 }
 
-export const getReminders = async (userId: number): Promise<Reminder[]> => {
-  const response = await axios.get(`${API_URL}/reminders?user_id=${userId}`);
+export const getReminders = async (userId: number, includePast = false): Promise<Reminder[]> => {
+  const response = await axios.get(`${API_URL}/reminders?user_id=${userId}&include_past=${includePast}`);
   return response.data;
 };
 

@@ -1,17 +1,15 @@
 import React, { useState } from "react";
 import { Reminder } from "../../../api/reminders";
-import NowMarker from "./NowMarker";
 import ReminderCard from "../ReminderCard";
 import { getNextOccurrence, getTimelinePosition } from "./utils";
-import TimelineDot from "./TimelineDot";
 import {
-  Button,
   Dialog,
   DialogHeader,
   DialogTitle,
   DialogBody,
 } from "../../../components/ui";
 import ReminderForm from "../ReminderForm";
+import { getCurrentDateTimeString } from "../../../utils/datetime";
 
 interface Props {
   reminders: Reminder[];
@@ -29,18 +27,34 @@ export default function Timeline({
   isDeleting,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
+  const [rescheduleData, setRescheduleData] = useState<Reminder | null>(null);
+
+  const handleReschedule = (reminder: Reminder) => {
+    setRescheduleData(reminder);
+    setShowForm(true);
+  };
+
+  const convertReminderToFormData = (reminder: Reminder) => {
+    const totalMinutes = reminder.period_minutes;
+    const days = Math.floor(totalMinutes / (24 * 60));
+    const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+    const minutes = totalMinutes % 60;
+
+    return {
+      name: reminder.name || "",
+      message: reminder.message || "",
+      reminderType: reminder.type as "one-time" | "repeating",
+      deliveryType: reminder.delivery_type as "sms" | "email",
+      intervalDays: days,
+      intervalHours: hours,
+      intervalMinutes: minutes,
+      startTime: getCurrentDateTimeString(), // Set to now for reschedule
+      contactValue: "", // Will be filled from contact methods if available
+    };
+  };
   return (
     <div className="relative">
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <NowMarker currentTime={currentTime} />
-          <div className="space-y-4 flex justify-center">
-            <Button variant="blue" onClick={() => setShowForm(true)}>
-              <span className="mr-2">+</span>
-              New Reminder
-            </Button>
-          </div>
-        </div>
         {reminders.map((reminder) => {
           const reminderTime = getNextOccurrence(reminder, currentTime);
           const timelineInfo = getTimelinePosition(reminderTime, currentTime);
@@ -53,25 +67,42 @@ export default function Timeline({
                 timelineInfo={timelineInfo}
                 isUpcoming={isUpcoming}
                 onDelete={onDelete}
+                onReschedule={handleReschedule}
                 isDeleting={isDeleting}
               />
             </div>
           );
         })}
       </div>
-      <Dialog isOpen={showForm} onClose={() => setShowForm(false)}>
-        <DialogHeader>
-          <DialogTitle>Create New Reminder</DialogTitle>
-        </DialogHeader>
-        <DialogBody>
-          <ReminderForm
-            onSuccess={() => {
-              onCreateSuccess();
-              setShowForm(false);
-            }}
-          />
-        </DialogBody>
-      </Dialog>
+      {showForm && (
+        <Dialog
+          isOpen={showForm}
+          onClose={() => {
+            setShowForm(false);
+            setRescheduleData(null);
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>
+              {rescheduleData ? "Reschedule Reminder" : "Create New Reminder"}
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <ReminderForm
+              initialData={
+                rescheduleData
+                  ? convertReminderToFormData(rescheduleData)
+                  : undefined
+              }
+              onSuccess={() => {
+                onCreateSuccess();
+                setShowForm(false);
+                setRescheduleData(null);
+              }}
+            />
+          </DialogBody>
+        </Dialog>
+      )}
     </div>
   );
 }

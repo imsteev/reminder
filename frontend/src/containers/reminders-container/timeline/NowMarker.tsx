@@ -1,6 +1,5 @@
 import React from "react";
 import { format } from "date-fns";
-import TimelineDot from "./TimelineDot";
 
 interface Props {
   currentTime: Date;
@@ -8,11 +7,12 @@ interface Props {
 
 export default function NowMarker({ currentTime }: Props) {
   return (
-    <div className="flex items-center">
-      <div className=" bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+    <div className="inline-flex items-center">
+      <div className="bg-purple-400 text-white px-3 py-1 rounded-full shadow-sm">
         <div className="flex items-center gap-2">
-          <span className="text-red-600 font-semibold text-sm">NOW</span>
-          <span className="text-red-500 text-xs">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          <span className="font-medium text-sm">NOW</span>
+          <span className="text-xs opacity-90">
             {format(currentTime, "h:mm a")}
           </span>
         </div>

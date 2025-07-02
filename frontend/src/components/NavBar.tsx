@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button, Dialog, DialogBody, DialogHeader, DialogTitle } from "./ui";
 import ReminderForm from "../containers/reminders-container/ReminderForm";
@@ -10,6 +10,29 @@ interface Props {
 export default function NavBar({ refetchReminders }: Props) {
   const [showForm, setShowForm] = useState(false);
   const location = useLocation();
+
+  // Keyboard shortcut for 'R' to open reminder form
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only trigger if not already typing in an input/textarea/contenteditable
+      const target = event.target as HTMLElement;
+      const isTyping =
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.contentEditable === "true";
+
+      if (!isTyping && (event.key === "r" || event.key === "R")) {
+        event.preventDefault();
+        setShowForm(true);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
@@ -59,7 +82,7 @@ export default function NavBar({ refetchReminders }: Props) {
               size="sm"
             >
               <span className="mr-2">+</span>
-              Reminder
+              Reminder <span className="ml-1 text-xs">(R)</span>
             </Button>
 
             {/* User Profile */}
@@ -79,7 +102,7 @@ export default function NavBar({ refetchReminders }: Props) {
           }}
         >
           <DialogHeader>
-            <DialogTitle>Create New Reminder</DialogTitle>
+            <DialogTitle className="p-0">Create New Reminder</DialogTitle>
           </DialogHeader>
           <DialogBody>
             <ReminderForm

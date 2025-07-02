@@ -325,7 +325,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
 
           <Field.Root>
             <Field.Label>Contact Method</Field.Label>
-            {contactMethods.length > 0 && (
+            {!!contactMethods?.length && (
               <div className="space-y-3">
                 <div>
                   {!createNewContactMethod && (
@@ -337,7 +337,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                         className="text-sm w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="0">Select a contact method</option>
-                        {contactMethods.map((method) => (
+                        {contactMethods?.map((method) => (
                           <option key={method.id} value={method.id}>
                             {method.description}{" "}
                             {method.type === "email" && `| ${method.value}`}
@@ -354,9 +354,9 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
               </div>
             )}
 
-            {(contactMethods.length === 0 || createNewContactMethod) && (
+            {(contactMethods?.length === 0 || createNewContactMethod) && (
               <div className="space-y-3 mt-3">
-                {contactMethods.length === 0 && (
+                {contactMethods?.length === 0 && (
                   <p className="text-sm text-gray-600">
                     No contact methods found. Create your first one:
                   </p>
@@ -410,12 +410,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
           <Field.Root>
             <Field.Control
               render={
-                <Input
-                  {...register("name")}
-                  className="w-full"
-                  autoFocus
-                  placeholder="..."
-                />
+                <Input {...register("name")} className="w-full" autoFocus />
               }
             />
           </Field.Root>

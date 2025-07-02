@@ -100,7 +100,7 @@ export default function ContactMethodsManager({
         )}
 
         <div className="space-y-3">
-          {contactMethods.map((method) => (
+          {contactMethods?.map((method) => (
             <ContactMethodCard
               key={method.id}
               method={method}
@@ -120,7 +120,7 @@ export default function ContactMethodsManager({
           ))}
         </div>
 
-        {contactMethods.length === 0 && (
+        {!contactMethods?.length && (
           <div className="text-center py-8 text-gray-500">
             <p>No contact methods found.</p>
             <p className="text-sm">

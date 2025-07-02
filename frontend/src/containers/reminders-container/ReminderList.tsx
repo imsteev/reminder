@@ -7,7 +7,7 @@ import { getNextOccurrence } from "./timeline/utils";
 import { toast } from "sonner";
 
 interface Props {
-  reminders?: Reminder[];
+  reminders: Reminder[];
   isLoading: boolean;
   error: any;
   refetch: () => void;

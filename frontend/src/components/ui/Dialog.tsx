@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "../../utils/cn";
 import { Button } from "./Button";
 
@@ -37,7 +37,11 @@ const DialogOverlay = React.forwardRef<HTMLDivElement, DialogOverlayProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
-        className={cn("fixed inset-0 z-50 bg-black/65", className)}
+        className={cn(
+          "fixed inset-0 z-50 bg-black/65",
+          "transition-opacity duration-200",
+          className
+        )}
         ref={ref}
         {...props}
       >
@@ -55,6 +59,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           "fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50",
           "w-full max-w-lg max-h-[85vh] flex flex-col",
           "bg-white rounded-lg shadow-lg border border-gray-200",
+          "transition-all duration-200",
           className
         )}
         ref={ref}
@@ -70,7 +75,7 @@ const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
-        className={cn("flex flex-col space-y-1.5 p-6 pb-4", className)}
+        className={cn("flex flex-col space-y-1.5 px-4 pt-6 pb-1", className)}
         ref={ref}
         {...props}
       >
@@ -100,7 +105,11 @@ const DialogTitle = React.forwardRef<HTMLHeadingElement, DialogTitleProps>(
 const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ className, children, ...props }, ref) => {
     return (
-      <div className={cn("flex-1 flex flex-col overflow-hidden", className)} ref={ref} {...props}>
+      <div
+        className={cn("flex-1 flex flex-col overflow-hidden", className)}
+        ref={ref}
+        {...props}
+      >
         {children}
       </div>
     );
@@ -130,10 +139,45 @@ export default function Dialog({
   children,
   className,
 }: DialogProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      // Small delay to trigger the fade-in animation
+      const timer = setTimeout(() => setIsVisible(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setIsVisible(false);
+    }
+  }, [isOpen]);
+
+  // Handle Escape key to close dialog
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isOpen) {
+        event.preventDefault();
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <DialogOverlay onClick={onClose}>
+    <DialogOverlay
+      onClick={onClose}
+      style={{
+        opacity: isVisible ? 1 : 0,
+      }}
+    >
       <DialogContent className={className} onClick={(e) => e.stopPropagation()}>
         {children}
       </DialogContent>

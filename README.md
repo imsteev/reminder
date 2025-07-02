@@ -1,13 +1,13 @@
-# Reminder App
+# Uchi
 
-Recurring text message reminders with Go backend and React frontend.
+A reminder app
 
 ## Setup
 
 1. `cp .env.example .env` and update database credentials
-2. `cd backend && go run ./cmd/migrate up && go run main.go`
-3. `cd frontend && npm install && npm run dev`
+2. `just migrate` - run database migrations
+3. `just dev` - start both backend and frontend
 
 ## Stack
 
-Go, Gin, PostgreSQL, React, TypeScript
+Go, Gin, PostgreSQL, React, TypeScript, Clerk

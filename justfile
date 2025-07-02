@@ -5,20 +5,11 @@ set dotenv-load
 default:
     @just --list
 
-# Backend Development
-# ------------------
+# Backend 
 
 # Run backend server locally
 backend-dev:
     cd backend && go run main.go
-
-# Build backend binary
-backend-build:
-    cd backend && go build -o bin/reminder main.go
-
-# Install backend dependencies
-backend-deps:
-    cd backend && go mod tidy
 
 # Run database migrations
 migrate:
@@ -34,31 +25,13 @@ nuke:
 migrate-new MIGRATION_NAME:
     cd backend && go run ./cmd/generate-migration {{MIGRATION_NAME}}
 
-# Frontend Development  
-# --------------------
+# Frontend
 
-# Run frontend development server
+# Run frontend development server locally
 frontend-dev:
     cd frontend && pnpm run dev
 
-# Build frontend for production
-frontend-build:
-    cd frontend && pnpm run build
-
-# Install frontend dependencies
-frontend-deps:
-    cd frontend && pnpm install
-
-# Combined Operations
-# ------------------
-
-# Install all dependencies (backend + frontend)
-install: backend-deps frontend-deps
-
-# Build both backend and frontend
-build: backend-build frontend-build
-
-# Run both backend and frontend in parallel
+# Run both backend and frontend locally in parallel
 dev:
     #!/usr/bin/env bash
     echo "Starting backend and frontend servers..."

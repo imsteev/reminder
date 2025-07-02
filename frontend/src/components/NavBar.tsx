@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button, Dialog, DialogBody, DialogHeader, DialogTitle } from "./ui";
 import ReminderForm from "../containers/reminders-container/ReminderForm";
+import { CurrentTimeContext } from "../contexts/CurrentTimeContext";
+import NowMarker from "../containers/reminders-container/timeline/NowMarker";
 
 interface Props {
   refetchReminders: () => void;
@@ -21,7 +23,14 @@ export default function NavBar({ refetchReminders }: Props) {
         target.tagName === "TEXTAREA" ||
         target.contentEditable === "true";
 
-      if (!isTyping && (event.key === "r" || event.key === "R")) {
+      if (
+        !isTyping &&
+        (event.key === "r" || event.key === "R") &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.shiftKey
+      ) {
         event.preventDefault();
         setShowForm(true);
       }
@@ -101,8 +110,11 @@ export default function NavBar({ refetchReminders }: Props) {
             setShowForm(false);
           }}
         >
-          <DialogHeader>
-            <DialogTitle className="p-0">Create New Reminder</DialogTitle>
+          <DialogHeader className="flex">
+            <DialogTitle className="p-0 flex items-center justify-between">
+              Create New Reminder
+              <NowMarker />
+            </DialogTitle>
           </DialogHeader>
           <DialogBody>
             <ReminderForm

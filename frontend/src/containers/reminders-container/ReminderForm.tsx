@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Field, Input } from "../../components/ui";
@@ -15,6 +15,8 @@ import {
 } from "../../utils/datetime";
 import { DEFAULT_USER_ID, TIME_PRESETS, UI_TEXT } from "../../constants";
 import { formatPhoneNumber } from "../../components/ui/PhoneInput";
+import { CurrentTimeContext } from "../../contexts/CurrentTimeContext";
+import NowMarker from "./timeline/NowMarker";
 
 interface ReminderFormData {
   name?: string;
@@ -40,6 +42,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   onSuccess,
   initialData,
 }) => {
+  const currentTime = useContext(CurrentTimeContext);
+
   const {
     register,
     handleSubmit,

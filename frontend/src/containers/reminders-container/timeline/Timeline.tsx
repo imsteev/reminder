@@ -42,7 +42,9 @@ export default function Timeline({
 
     return {
       body: reminder.body || "",
-      reminderType: reminder.is_repeating ? "repeating" as const : "one-time" as const,
+      reminderType: reminder.is_repeating
+        ? ("repeating" as const)
+        : ("one-time" as const),
       contactMethodID: reminder.contact_method_id,
       intervalDays: days,
       intervalHours: hours,

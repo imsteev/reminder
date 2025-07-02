@@ -49,12 +49,17 @@ export default function NavBar({ refetchReminders }: Props) {
         <div className="flex items-center justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+            <div
+              onClick={() => {
+                window.location.href = "/";
+              }}
+              className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg cursor-pointer"
+            >
               <span className="text-xl">⏰</span>
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">RemindMe</h1>
-              <p className="text-xs text-gray-500">Stay organized</p>
+              <NowMarker />
             </div>
           </div>
 
@@ -113,7 +118,6 @@ export default function NavBar({ refetchReminders }: Props) {
           <DialogHeader className="flex">
             <DialogTitle className="p-0 flex items-center justify-between">
               Create New Reminder
-              <NowMarker />
             </DialogTitle>
           </DialogHeader>
           <DialogBody>

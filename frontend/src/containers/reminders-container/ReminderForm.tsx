@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Field, Input } from "../../components/ui";
@@ -17,9 +17,10 @@ import { DEFAULT_USER_ID, TIME_PRESETS, UI_TEXT } from "../../constants";
 import { formatPhoneNumber } from "../../components/ui/PhoneInput";
 import { CurrentTimeContext } from "../../contexts/CurrentTimeContext";
 import NowMarker from "./timeline/NowMarker";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
 
 interface ReminderFormData {
-  name?: string;
   body?: string;
   contactMethodID?: number;
   reminderType?: "one-time" | "repeating";
@@ -53,7 +54,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     formState: {},
   } = useForm<ReminderFormData>({
     defaultValues: {
-      name: initialData?.name || "",
       body: initialData?.body || "",
       reminderType: initialData?.reminderType || "one-time",
       contactMethodID: initialData?.contactMethodID || 0,
@@ -74,6 +74,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     queryKey: ["contactMethods", DEFAULT_USER_ID],
     queryFn: () => getContactMethods({ user_id: DEFAULT_USER_ID }),
   });
+
+  useEffect(() => {
+    if (watch("contactMethodID") === 0 && contactMethods?.length) {
+      setValue("contactMethodID", contactMethods[0].id);
+    }
+  }, [contactMethods]);
 
   const createContactMethodMutation = useMutation({
     mutationFn: createContactMethod,
@@ -271,7 +277,12 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
           <div>
             {/* Custom Time Input */}
             <Field.Root>
-              <Field.Label>{UI_TEXT.START_TIME_LABEL}</Field.Label>
+              <Field.Label className="flex items-center justify-between pr-1">
+                {UI_TEXT.START_TIME_LABEL}
+                <span className="text-xs text-gray-500">
+                  Now: {format(currentTime!, "h:mm a")}
+                </span>
+              </Field.Label>
               <Field.Control
                 render={
                   <Input type="datetime-local" {...register("startTime")} />
@@ -329,6 +340,20 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
 
           <Field.Root>
             <Field.Label>Contact Method</Field.Label>
+            {!contactMethods?.length && (
+              <p className="text-sm text-gray-600">
+                No contact methods found. Create your first one{" "}
+                <Link
+                  to="/settings"
+                  className="text-blue-500"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  here
+                </Link>
+                .
+              </p>
+            )}
             {!!contactMethods?.length && (
               <div className="space-y-3">
                 <div>
@@ -338,6 +363,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                         {...register("contactMethodID", {
                           valueAsNumber: true,
                         })}
+                        value={watch("contactMethodID")}
                         className="text-sm w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="0">Select a contact method</option>
@@ -414,7 +440,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
           <Field.Root>
             <Field.Control
               render={
-                <Input {...register("name")} className="w-full" autoFocus />
+                <Input {...register("body")} className="w-full" autoFocus />
               }
             />
           </Field.Root>
@@ -423,7 +449,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
             type="submit"
             disabled={
               createMutation.isPending ||
-              !watch("name") ||
+              !watch("body") ||
               !watch("startTime") ||
               !watch("contactMethodID")
             }

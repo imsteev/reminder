@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import NavBar from "./components/NavBar";
-import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { CurrentTimeProvider } from "./contexts/CurrentTimeContext";
 import ClerkSignedInComponent from "./components/ClerkSignedInComponent";
+import { initAxios } from "./api";
+
+const queryClient = new QueryClient();
+initAxios();
 
 function App() {
-  const queryClient = useQueryClient();
   const refetchReminders = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["reminders"] });
   }, [queryClient]);

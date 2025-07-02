@@ -16,7 +16,6 @@ import {
 import { DEFAULT_USER_ID, TIME_PRESETS, UI_TEXT } from "../../constants";
 import { formatPhoneNumber } from "../../components/ui/PhoneInput";
 import { CurrentTimeContext } from "../../contexts/CurrentTimeContext";
-import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
 interface ReminderFormData {

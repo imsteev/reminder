@@ -11,7 +11,7 @@ import { deleteReminder, type Reminder } from "../../api/reminders";
 import Timeline from "./timeline/Timeline";
 import { getNextOccurrence } from "./timeline/utils";
 import { toast } from "sonner";
-import ReminderForm from "./ReminderForm";
+import { ReminderForm } from "../../components/reminder-form";
 
 interface Props {
   reminders: Reminder[];
@@ -68,8 +68,10 @@ const ReminderList: React.FC<Props> = ({
 
   if (!isLoading && !sortedReminders?.length) {
     return (
-      <div className="text-center text-gray-500 py-24 flex flex-col items-center justify-center">
-        <div className="text-xl font-medium mb-4">No active reminders</div>
+      <div className="text-center py-24 flex flex-col items-center justify-center">
+        <div className="text-xl font-medium mb-4 text-gray-500">
+          No active reminders
+        </div>
         <Button
           onClick={() => setShowForm(true)}
           className="bg-blue-600 text-white hover:bg-blue-700 font-medium"

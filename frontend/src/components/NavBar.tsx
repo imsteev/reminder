@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button, Dialog, DialogBody, DialogHeader, DialogTitle } from "./ui";
-import ReminderForm from "../containers/reminders-container/ReminderForm";
+import { ReminderForm } from "./reminder-form";
 import { CurrentTimeContext } from "../contexts/CurrentTimeContext";
 import NowMarker from "../containers/reminders-container/timeline/NowMarker";
 import { UserButton } from "./ClerkSignedInComponent";

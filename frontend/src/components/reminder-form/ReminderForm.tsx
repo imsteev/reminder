@@ -1,7 +1,7 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Field, Input, Textarea } from "../../components/ui";
+import { Button, Field, Input, Textarea } from "../ui";
 import { toast } from "sonner";
 import {
   createReminder,
@@ -13,9 +13,15 @@ import {
   getDateTimeStringInMinutes,
   getTomorrowDateTimeString,
 } from "../../utils/datetime";
-import { DEFAULT_USER_ID, TIME_PRESETS, UI_TEXT } from "../../constants";
-import { formatPhoneNumber } from "../../components/ui/PhoneInput";
-import { CurrentTimeContext } from "../../contexts/CurrentTimeContext";
+import { DEFAULT_USER_ID, TIME_PRESETS } from "../../constants";
+import {
+  ReminderTypeSelector,
+  TimePresetButtons,
+  RepeatIntervalSelector,
+  ContactMethodSelector,
+  MessageInput,
+} from ".";
+import { formatPhoneNumber } from "../ui/PhoneInput";
 import { Link } from "react-router-dom";
 
 interface ReminderFormData {
@@ -29,7 +35,6 @@ interface ReminderFormData {
   newContactMethodType?: "phone" | "email";
   newContactMethodValue?: string;
   newContactMethodDescription?: string;
-  createNewContactMethod?: boolean;
 }
 
 interface ReminderFormProps {
@@ -41,8 +46,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   onSuccess,
   initialData,
 }) => {
-  const currentTime = useContext(CurrentTimeContext);
-
   const {
     register,
     handleSubmit,
@@ -59,13 +62,11 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       intervalHours: initialData?.intervalHours || 1,
       intervalMinutes: initialData?.intervalMinutes || 0,
       startTime: initialData?.startTime || "",
-      createNewContactMethod: false,
       newContactMethodType: "email",
     },
   });
 
   const reminderType = watch("reminderType");
-  const createNewContactMethod = watch("createNewContactMethod");
   const newContactMethodType = watch("newContactMethodType");
 
   const { data: contactMethods = [] } = useQuery({
@@ -78,18 +79,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       setValue("contactMethodID", contactMethods[0].id);
     }
   }, [contactMethods]);
-
-  const createContactMethodMutation = useMutation({
-    mutationFn: createContactMethod,
-    onSuccess: () => {
-      toast.success("Contact method created");
-    },
-    onError: (error) => {
-      toast.error("Failed to create contact method", {
-        description: error.message,
-      });
-    },
-  });
 
   const createMutation = useMutation({
     mutationFn: createReminder,
@@ -128,23 +117,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       periodMinutes = days * 24 * 60 + hours * 60 + minutes;
     }
 
-    let contactMethodId = data.contactMethodID;
-
-    if (data.createNewContactMethod) {
-      try {
-        const newContactMethod = await createContactMethodMutation.mutateAsync({
-          user_id: DEFAULT_USER_ID,
-          type: data.newContactMethodType || "email",
-          value: data.newContactMethodValue || "",
-          description: data.newContactMethodDescription || "",
-        });
-        contactMethodId = newContactMethod.id;
-      } catch (error) {
-        console.error("Failed to create contact method:", error);
-        return;
-      }
-    }
-
+    const contactMethodId = data.contactMethodID;
     if (!contactMethodId) {
       console.error("No contact method selected or created");
       return;
@@ -153,9 +126,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
       body: data.body || "",
-      start_time: data.startTime
-        ? new Date(data.startTime).toISOString()
-        : new Date().toISOString(),
+      start_time: new Date(data.startTime!).toISOString(),
       is_repeating: data.reminderType === "repeating",
       period_minutes: periodMinutes,
       contact_method_id: contactMethodId,
@@ -168,24 +139,10 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         {/* Main content area with scroll */}
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
           <div>
-            <Field.Root>
-              <Field.Label className="flex items-center justify-between mb-2 cursor-pointer">
-                {UI_TEXT.START_TIME_LABEL}
-                <div className="text-xs text-gray-500 flex items-center cursor-pointer">
-                  Repeating
-                  <input
-                    type="checkbox"
-                    checked={watch("reminderType") === "repeating"}
-                    onChange={() =>
-                      watch("reminderType") === "repeating"
-                        ? setValue("reminderType", "one-time")
-                        : setValue("reminderType", "repeating")
-                    }
-                    className="ml-2 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                  />
-                </div>
-              </Field.Label>
-            </Field.Root>
+            <ReminderTypeSelector
+              value={reminderType || "one-time"}
+              onChange={(value) => setValue("reminderType", value)}
+            />
             <Field.Root>
               <Field.Control
                 render={
@@ -199,7 +156,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="blue"
+                  variant="outline"
                   size="sm"
                   onClick={setStartTimeToNow}
                   className="rounded-full flex-1"
@@ -208,7 +165,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  variant="blue"
+                  variant="outline"
                   size="sm"
                   onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
                   className="rounded-full flex-1"
@@ -217,7 +174,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  variant="blue"
+                  variant="outline"
                   size="sm"
                   onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
                   className="rounded-full flex-1"
@@ -226,7 +183,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                 </Button>
                 <Button
                   type="button"
-                  variant="blue"
+                  variant="outline"
                   size="sm"
                   onClick={() =>
                     setStartTimeTomorrow(
@@ -244,69 +201,67 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
 
           {reminderType === "repeating" && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Repeats every
-                </label>
-                <div className="grid grid-cols-3 gap-4">
-                  <Field.Root>
-                    <Field.Control
-                      render={
-                        <Input
-                          type="number"
-                          {...register("intervalMinutes", {
-                            min: 0,
-                            max: 59,
-                            valueAsNumber: true,
-                          })}
-                          placeholder="0"
-                          min={0}
-                          max={59}
-                          onFocus={(e) => e.target.select()}
-                        />
-                      }
-                    />
-                    <Field.Description>Minutes</Field.Description>
-                  </Field.Root>
+              <label className="text-start block text-sm font-medium text-gray-700 mb-2">
+                Repeats every
+              </label>
+              <div className="grid grid-cols-3 gap-4">
+                <Field.Root>
+                  <Field.Control
+                    render={
+                      <Input
+                        type="number"
+                        {...register("intervalMinutes", {
+                          min: 0,
+                          max: 59,
+                          valueAsNumber: true,
+                        })}
+                        placeholder="0"
+                        min={0}
+                        max={59}
+                        onFocus={(e) => e.target.select()}
+                      />
+                    }
+                  />
+                  <Field.Description>Minutes</Field.Description>
+                </Field.Root>
 
-                  <Field.Root>
-                    <Field.Control
-                      render={
-                        <Input
-                          type="number"
-                          {...register("intervalHours", {
-                            min: 0,
-                            max: 23,
-                            valueAsNumber: true,
-                          })}
-                          placeholder="0"
-                          min={0}
-                          max={23}
-                          onFocus={(e) => e.target.select()}
-                        />
-                      }
-                    />
-                    <Field.Description>Hours</Field.Description>
-                  </Field.Root>
+                <Field.Root>
+                  <Field.Control
+                    render={
+                      <Input
+                        type="number"
+                        {...register("intervalHours", {
+                          min: 0,
+                          max: 23,
+                          valueAsNumber: true,
+                        })}
+                        placeholder="0"
+                        min={0}
+                        max={23}
+                        onFocus={(e) => e.target.select()}
+                      />
+                    }
+                  />
+                  <Field.Description>Hours</Field.Description>
+                </Field.Root>
 
-                  <Field.Root>
-                    <Field.Control
-                      render={
-                        <Input
-                          type="number"
-                          {...register("intervalDays", {
-                            min: 0,
-                            valueAsNumber: true,
-                          })}
-                          placeholder="0"
-                          min={0}
-                          onFocus={(e) => e.target.select()}
-                        />
-                      }
-                    />
-                    <Field.Description>Days</Field.Description>
-                  </Field.Root>
-                </div>
+                <Field.Root>
+                  <Field.Control
+                    render={
+                      <Input
+                        type="number"
+                        {...register("intervalDays", {
+                          min: 0,
+                          valueAsNumber: true,
+                        })}
+                        placeholder="0"
+                        min={0}
+                        onFocus={(e) => e.target.select()}
+                      />
+                    }
+                  />
+                  <Field.Description>Days</Field.Description>
+                </Field.Root>
               </div>
             </div>
           )}
@@ -320,32 +275,30 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
               {!!contactMethods?.length && (
                 <div className="space-y-3">
                   <div>
-                    {!createNewContactMethod && (
-                      <select
-                        {...register("contactMethodID", {
-                          valueAsNumber: true,
-                        })}
-                        value={watch("contactMethodID")}
-                        className="bg-white text-sm w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="0">Select a contact method</option>
-                        {contactMethods?.map((method) => (
-                          <option key={method.id} value={method.id}>
-                            {method.description}{" "}
-                            {method.type === "email" && `| ${method.value}`}
-                            {method.type === "phone" &&
-                              `| ${formatPhoneNumber(method.value)
-                                .replaceAll("(", "")
-                                .replaceAll(")", "")}`}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                    <select
+                      {...register("contactMethodID", {
+                        valueAsNumber: true,
+                      })}
+                      value={watch("contactMethodID")}
+                      className="bg-white text-sm w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="0">Select a contact method</option>
+                      {contactMethods?.map((method) => (
+                        <option key={method.id} value={method.id}>
+                          {method.description}{" "}
+                          {method.type === "email" && `| ${method.value}`}
+                          {method.type === "phone" &&
+                            `| ${formatPhoneNumber(method.value)
+                              .replaceAll("(", "")
+                              .replaceAll(")", "")}`}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               )}
 
-              {(contactMethods?.length === 0 || createNewContactMethod) && (
+              {contactMethods?.length === 0 && (
                 <div className="space-y-3 mt-3">
                   {contactMethods?.length === 0 && (
                     <p className="text-sm text-gray-600">

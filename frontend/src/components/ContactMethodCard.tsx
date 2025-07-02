@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { type ContactMethod } from "../api/reminders";
+import { ContactMethod } from "../api/reminders";
 import React from "react";
 import { Card, CardContent, PhoneInput, Input, Button } from "./ui";
 import { formatPhoneNumber } from "./ui/PhoneInput";

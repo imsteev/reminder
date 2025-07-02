@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogBody,
 } from "../../../components/ui";
-import ReminderForm from "../ReminderForm";
+import { ReminderForm } from "../../../components/reminder-form";
 import { getCurrentDateTimeString } from "../../../utils/datetime";
 
 interface Props {

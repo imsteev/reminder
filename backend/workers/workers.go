@@ -1,7 +1,6 @@
 package workers
 
 import (
-	"fmt"
 	"reminder-app/config"
 	"reminder-app/lib/mail/resend"
 
@@ -19,14 +18,16 @@ type Params struct {
 
 func New(p Params) *river.Workers {
 	workers := river.NewWorkers()
-	fmt.Println("Resend API Key:", p.Config.Resend.ApiKey)
-	fmt.Println("Resend Domain:", p.Config.Resend.Domain)
-	river.AddWorker(workers, &ReminderJobWorker{
+
+	reminderWorker := &ReminderJobWorker{
 		GormDB: p.DB,
 		EmailSender: &resend.ResendSender{
 			ApiKey: p.Config.Resend.ApiKey,
 			Domain: p.Config.Resend.Domain,
 		},
-	})
+	}
+
+	river.AddWorker(workers, reminderWorker)
+
 	return workers
 }

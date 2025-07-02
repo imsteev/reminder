@@ -157,6 +157,45 @@ func (rc *Controller) UpdateReminder(id int64, reminder *protocol.UpdateReminder
 		return nil, err
 	}
 
+	if _, err := rc.riverClient.JobCancel(context.Background(), int64(dbReminder.RiverJobID)); err != nil {
+		return nil, err
+	}
+
+	if reminder.IsRepeating {
+		args := workers.ReminderJobArgs{
+			ReminderID: int(dbReminder.ID),
+		}
+		opts := &river.InsertOpts{
+			ScheduledAt: dbReminder.StartTime,
+		}
+		job := river.NewPeriodicJob(
+			river.PeriodicInterval(time.Duration(dbReminder.PeriodMinutes)*time.Minute),
+			func() (river.JobArgs, *river.InsertOpts) { return args, opts },
+			nil,
+		)
+
+		// This adds a handle in memory, not in the database
+		handle := rc.riverClient.PeriodicJobs().Add(job)
+
+		fmt.Println("🔄 ADDED PERIODIC JOB", handle)
+		dbReminder.RiverJobID = int(handle)
+
+	} else {
+		args := workers.ReminderJobArgs{
+			ReminderID: int(dbReminder.ID),
+		}
+		opts := &river.InsertOpts{
+			ScheduledAt: dbReminder.StartTime,
+		}
+		insertResult, err := rc.riverClient.Insert(context.Background(), args, opts)
+		if err != nil {
+			return nil, err
+		}
+
+		dbReminder.RiverJobID = int(insertResult.Job.ID)
+
+	}
+
 	return &protocol.Reminder{
 		ID:              int64(dbReminder.ID),
 		UserID:          dbReminder.UserID,

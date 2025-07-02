@@ -17,7 +17,7 @@ type ResendSender struct {
 func (s *ResendSender) Send(to string, subject string, body string) error {
 	client := resendsdk.NewClient(s.ApiKey)
 	params := &resendsdk.SendEmailRequest{
-		From:    fmt.Sprintf("reminder@%s", s.Domain),
+		From:    fmt.Sprintf("UchiBot <reminder@%s>", s.Domain),
 		To:      []string{to},
 		Html:    body,
 		Subject: subject,

@@ -43,8 +43,7 @@ func (w *ReminderJobWorker) Work(ctx context.Context, job *river.Job[ReminderJob
 	body := fmt.Sprintf(`
 	<html>
 		<body>
-			<h1>Reminder</h1>
-			<p>%s</p>
+			<p style="font-size: 20px;">%s</p>
 		</body>
 	</html>
 	`, reminder.Body)

@@ -122,7 +122,6 @@ export default function ContactMethodsManager({
 
         {!contactMethods?.length && (
           <div className="text-center py-8 text-gray-500">
-            <p>No contact methods found.</p>
             <p className="text-sm">
               Add your first contact method to start receiving reminders.
             </p>

@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Button } from "../../components/ui";
+import {
+  Button,
+  Dialog,
+  DialogBody,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui";
 import { deleteReminder, type Reminder } from "../../api/reminders";
 import Timeline from "./timeline/Timeline";
 import { getNextOccurrence } from "./timeline/utils";
 import { toast } from "sonner";
+import ReminderForm from "./ReminderForm";
 
 interface Props {
   reminders: Reminder[];
@@ -19,6 +26,7 @@ const ReminderList: React.FC<Props> = ({
   error,
   refetch,
 }) => {
+  const [showForm, setShowForm] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -59,7 +67,42 @@ const ReminderList: React.FC<Props> = ({
   );
 
   if (!isLoading && !sortedReminders?.length) {
-    return <div className="text-center text-gray-500 py-24">No reminders</div>;
+    return (
+      <div className="text-center text-gray-500 py-24 flex flex-col items-center justify-center">
+        <div className="text-xl font-medium mb-4">No active reminders</div>
+        <Button
+          onClick={() => setShowForm(true)}
+          className="bg-blue-600 text-white hover:bg-blue-700 font-medium"
+          size="sm"
+        >
+          <span className="mr-2">+</span>
+          Reminder
+        </Button>
+
+        {showForm && (
+          <Dialog
+            isOpen={showForm}
+            onClose={() => {
+              setShowForm(false);
+            }}
+          >
+            <DialogHeader className="flex">
+              <DialogTitle className="p-0 flex items-center justify-between">
+                Create Reminder
+              </DialogTitle>
+            </DialogHeader>
+            <DialogBody>
+              <ReminderForm
+                onSuccess={() => {
+                  setShowForm(false);
+                  refetch();
+                }}
+              />
+            </DialogBody>
+          </Dialog>
+        )}
+      </div>
+    );
   }
 
   return (

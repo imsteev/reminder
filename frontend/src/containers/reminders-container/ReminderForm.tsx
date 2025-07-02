@@ -1,7 +1,7 @@
 import React, { useContext, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Field, Input } from "../../components/ui";
+import { Button, Field, Input, Textarea } from "../../components/ui";
 import { toast } from "sonner";
 import {
   createReminder,
@@ -411,10 +411,11 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
           <Field.Root>
             <Field.Control
               render={
-                <Input
+                <Textarea
                   {...register("body")}
                   className="w-full"
                   placeholder="Reason for reminder"
+                  rows={3}
                 />
               }
             />

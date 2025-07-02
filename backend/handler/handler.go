@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"reminder-app/controller/clerkcontroller"
 	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/protocol"
 	"reminder-app/controller/remindercontroller"
@@ -18,6 +22,7 @@ type Handler struct {
 	*gin.Engine
 	reminderController      *remindercontroller.Controller
 	contactMethodController *contactmethodcontroller.Controller
+	clerkController         *clerkcontroller.Controller
 }
 
 type Params struct {
@@ -25,6 +30,7 @@ type Params struct {
 
 	ReminderController      *remindercontroller.Controller
 	ContactMethodController *contactmethodcontroller.Controller
+	ClerkController         *clerkcontroller.Controller
 }
 
 var _ http.Handler = (*Handler)(nil)
@@ -35,6 +41,7 @@ func New(p Params) *Handler {
 		Engine:                  api,
 		reminderController:      p.ReminderController,
 		contactMethodController: p.ContactMethodController,
+		clerkController:         p.ClerkController,
 	}
 	return h.init()
 }
@@ -54,19 +61,19 @@ func (h *Handler) init() *Handler {
 		c.Next()
 	})
 
-	grp := h.Group("/api")
+	api := h.Group("/api")
+	api.Use(clerkAuthMiddleware())
+	api.GET("/reminders", h.handleGetReminders)
+	api.POST("/reminders", h.handleCreateReminder)
+	api.PUT("/reminders/:id", h.handleUpdateReminder)
+	api.DELETE("/reminders/:id", h.handleDeleteReminder)
+	api.GET("/contact-methods", h.handleGetContactMethods)
+	api.POST("/contact-methods", h.handleCreateContactMethod)
+	api.PUT("/contact-methods/:id", h.handleUpdateContactMethod)
+	api.DELETE("/contact-methods/:id", h.handleDeleteContactMethod)
 
-	grp.Use(clerkAuthMiddleware())
-
-	grp.GET("/reminders", h.handleGetReminders)
-	grp.POST("/reminders", h.handleCreateReminder)
-	grp.PUT("/reminders/:id", h.handleUpdateReminder)
-	grp.DELETE("/reminders/:id", h.handleDeleteReminder)
-
-	grp.GET("/contact-methods", h.handleGetContactMethods)
-	grp.POST("/contact-methods", h.handleCreateContactMethod)
-	grp.PUT("/contact-methods/:id", h.handleUpdateContactMethod)
-	grp.DELETE("/contact-methods/:id", h.handleDeleteContactMethod)
+	webhooks := h.Group("/webhooks")
+	webhooks.POST("/clerk", h.handleClerkWebhook)
 
 	return h
 }
@@ -241,4 +248,30 @@ func (h *Handler) handleDeleteContactMethod(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "contact method deleted"})
+}
+
+func (h *Handler) handleClerkWebhook(c *gin.Context) {
+
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		fmt.Println("error reading clerk webhook body: ", err)
+		c.Status(http.StatusOK)
+		return
+	}
+
+	var eventType protocol.ClerkEvent
+	if err := json.Unmarshal(body, &eventType); err != nil {
+		fmt.Println("error parsing clerk webhook: ", err)
+		c.Status(http.StatusOK)
+		return
+	}
+
+	if err := h.clerkController.HandleClerkEvent(eventType.Type, body); err != nil {
+		fmt.Println("error handling clerk webhook: ", err)
+		c.Status(http.StatusOK)
+		return
+	}
+
+	// always return 200 for webhooks
+	c.Status(http.StatusOK)
 }

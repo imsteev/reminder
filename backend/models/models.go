@@ -16,6 +16,7 @@ type BaseModel struct {
 type User struct {
 	BaseModel `tstype:",extends"`
 	Name      string `json:"name" gorm:"not null"`
+	ClerkID   string `json:"clerk_id" gorm:"not null;unique"`
 }
 
 type ContactMethod struct {

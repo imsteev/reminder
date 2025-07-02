@@ -55,6 +55,11 @@ func Up202412291545(tx *gorm.DB) error {
 		return err
 	}
 
+	// Bump the users sequence to avoid conflicts with the test user
+	if err := tx.Exec("SELECT setval('users_id_seq', 2, false)").Error; err != nil {
+		return err
+	}
+
 	// Create test contact methods for both SMS and email delivery
 	contactMethods := []models.ContactMethod{
 		{

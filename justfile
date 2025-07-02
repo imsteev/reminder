@@ -1,5 +1,4 @@
-# Reminder App Development Commands
-set dotenv-load
+set dotenv-filename := "backend/.env"
 
 # Default recipe - show available commands
 default:

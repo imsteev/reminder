@@ -75,7 +75,7 @@ const DialogHeader = React.forwardRef<HTMLDivElement, DialogHeaderProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
-        className={cn("flex flex-col space-y-1.5 px-4 pt-6 pb-1", className)}
+        className={cn("flex flex-col space-y-1.5 px-4 pt-6 pb-2", className)}
         ref={ref}
         {...props}
       >
@@ -106,7 +106,10 @@ const DialogBody = React.forwardRef<HTMLDivElement, DialogBodyProps>(
   ({ className, children, ...props }, ref) => {
     return (
       <div
-        className={cn("flex-1 flex flex-col overflow-hidden", className)}
+        className={cn(
+          "flex-1 flex flex-col overflow-hidden rounded-lg",
+          className
+        )}
         ref={ref}
         {...props}
       >

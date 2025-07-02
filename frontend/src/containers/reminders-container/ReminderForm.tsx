@@ -16,7 +16,6 @@ import {
 import { DEFAULT_USER_ID, TIME_PRESETS, UI_TEXT } from "../../constants";
 import { formatPhoneNumber } from "../../components/ui/PhoneInput";
 import { CurrentTimeContext } from "../../contexts/CurrentTimeContext";
-import NowMarker from "./timeline/NowMarker";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
@@ -169,35 +168,86 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
         {/* Main content area with scroll */}
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
-          <Field.Root>
-            <Field.Label>Reminder Type</Field.Label>
-            <div className="flex gap-3">
-              <label className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  value="one-time"
-                  {...register("reminderType")}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-sm w-full text-center">One-time</span>
-              </label>
-              <label className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-                <input
-                  type="radio"
-                  value="repeating"
-                  {...register("reminderType")}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                />
-                <span className="text-sm w-full text-center">Repeating</span>
-              </label>
+          <div>
+            <Field.Root>
+              <Field.Label className="flex items-center justify-between pr-1 mb-2">
+                {UI_TEXT.START_TIME_LABEL}
+                <div className="text-xs text-gray-500 flex items-center">
+                  Repeating
+                  <input
+                    type="checkbox"
+                    checked={watch("reminderType") === "repeating"}
+                    onChange={() =>
+                      watch("reminderType") === "repeating"
+                        ? setValue("reminderType", "one-time")
+                        : setValue("reminderType", "repeating")
+                    }
+                    className="ml-2 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2"
+                  />
+                </div>
+              </Field.Label>
+            </Field.Root>
+            <Field.Root>
+              <Field.Control
+                render={
+                  <Input type="datetime-local" {...register("startTime")} />
+                }
+              />
+            </Field.Root>
+
+            {/* Quick Time Buttons */}
+            <div className="mt-3">
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="blue"
+                  size="sm"
+                  onClick={setStartTimeToNow}
+                  className="rounded-full flex-1"
+                >
+                  Now
+                </Button>
+                <Button
+                  type="button"
+                  variant="blue"
+                  size="sm"
+                  onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
+                  className="rounded-full flex-1"
+                >
+                  In 15 min
+                </Button>
+                <Button
+                  type="button"
+                  variant="blue"
+                  size="sm"
+                  onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
+                  className="rounded-full flex-1"
+                >
+                  In 1 hour
+                </Button>
+                <Button
+                  type="button"
+                  variant="blue"
+                  size="sm"
+                  onClick={() =>
+                    setStartTimeTomorrow(
+                      TIME_PRESETS.TOMORROW_9AM.hour,
+                      TIME_PRESETS.TOMORROW_9AM.minute
+                    )
+                  }
+                  className="rounded-full flex-1"
+                >
+                  Tomorrow
+                </Button>
+              </div>
             </div>
-          </Field.Root>
+          </div>
 
           {reminderType === "repeating" && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Interval
+                  Repeats every
                 </label>
                 <div className="grid grid-cols-3 gap-4">
                   <Field.Root>
@@ -261,110 +311,23 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
               </div>
             </div>
           )}
+        </div>
 
-          {/* <Field.Root>
-        <Field.Control
-          render={
-            <Textarea
-              {...register("body")}
-              placeholder={UI_TEXT.MESSAGE_PLACEHOLDER}
-              rows={3}
-            />
-          }
-        />
-      </Field.Root> */}
-
-          <div>
-            {/* Custom Time Input */}
-            <Field.Root>
-              <Field.Label className="flex items-center justify-between pr-1">
-                {UI_TEXT.START_TIME_LABEL}
-                <span className="text-xs text-gray-500">
-                  Now: {format(currentTime!, "h:mm a")}
-                </span>
-              </Field.Label>
-              <Field.Control
-                render={
-                  <Input type="datetime-local" {...register("startTime")} />
-                }
-              />
-            </Field.Root>
-
-            {/* Quick Time Buttons */}
-            <div className="mt-3">
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="blue"
-                  size="sm"
-                  onClick={setStartTimeToNow}
-                  className="rounded-full flex-1"
-                >
-                  Now
-                </Button>
-                <Button
-                  type="button"
-                  variant="green"
-                  size="sm"
-                  onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
-                  className="rounded-full flex-1"
-                >
-                  In 15 min
-                </Button>
-                <Button
-                  type="button"
-                  variant="green"
-                  size="sm"
-                  onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
-                  className="rounded-full flex-1"
-                >
-                  In 1 hour
-                </Button>
-                <Button
-                  type="button"
-                  variant="purple"
-                  size="sm"
-                  onClick={() =>
-                    setStartTimeTomorrow(
-                      TIME_PRESETS.TOMORROW_9AM.hour,
-                      TIME_PRESETS.TOMORROW_9AM.minute
-                    )
-                  }
-                  className="rounded-full flex-1"
-                >
-                  Tmrw 9am
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <Field.Root>
-            <Field.Label>Contact Method</Field.Label>
-            {!contactMethods?.length && (
-              <p className="text-sm text-gray-600">
-                No contact methods found. Create your first one{" "}
-                <Link
-                  to="/settings"
-                  className="text-blue-500"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  here
-                </Link>
-                .
-              </p>
-            )}
-            {!!contactMethods?.length && (
-              <div className="space-y-3">
-                <div>
-                  {!createNewContactMethod && (
-                    <div className="mt-2">
+        {/* Sticky footer */}
+        <div className="border-t border-gray-200 bg-gray-100 p-4 space-y-3 rounded-b-lg">
+          <label className="flex  justify-between items-center text-sm font-medium text-gray-700 rounded-lg">
+            <span>Deliver to</span>
+            <Field.Root className="bg-white">
+              {!!contactMethods?.length && (
+                <div className="space-y-3">
+                  <div>
+                    {!createNewContactMethod && (
                       <select
                         {...register("contactMethodID", {
                           valueAsNumber: true,
                         })}
                         value={watch("contactMethodID")}
-                        className="text-sm w-full px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="text-sm w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="0">Select a contact method</option>
                         {contactMethods?.map((method) => (
@@ -378,69 +341,81 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                           </option>
                         ))}
                       </select>
-                    </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {(contactMethods?.length === 0 || createNewContactMethod) && (
+                <div className="space-y-3 mt-3">
+                  {contactMethods?.length === 0 && (
+                    <p className="text-sm text-gray-600">
+                      No contact methods found. Create your first one:
+                    </p>
                   )}
+
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        value="email"
+                        {...register("newContactMethodType")}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">Email</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        value="phone"
+                        {...register("newContactMethodType")}
+                        className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                      />
+                      <span className="text-sm">Phone</span>
+                    </label>
+                  </div>
+
+                  <Input
+                    {...register("newContactMethodValue")}
+                    placeholder={
+                      newContactMethodType === "email"
+                        ? "user@example.com"
+                        : "+1234567890"
+                    }
+                    type={newContactMethodType === "email" ? "email" : "tel"}
+                  />
+
+                  <Input
+                    {...register("newContactMethodDescription")}
+                    placeholder="Description (e.g., Personal email, Work phone)"
+                  />
                 </div>
-              </div>
-            )}
-
-            {(contactMethods?.length === 0 || createNewContactMethod) && (
-              <div className="space-y-3 mt-3">
-                {contactMethods?.length === 0 && (
-                  <p className="text-sm text-gray-600">
-                    No contact methods found. Create your first one:
-                  </p>
-                )}
-
-                <div className="flex gap-3">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      value="email"
-                      {...register("newContactMethodType")}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="text-sm">Email</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      value="phone"
-                      {...register("newContactMethodType")}
-                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <span className="text-sm">Phone</span>
-                  </label>
-                </div>
-
-                <Input
-                  {...register("newContactMethodValue")}
-                  placeholder={
-                    newContactMethodType === "email"
-                      ? "user@example.com"
-                      : "+1234567890"
-                  }
-                  type={newContactMethodType === "email" ? "email" : "tel"}
-                />
-
-                <Input
-                  {...register("newContactMethodDescription")}
-                  placeholder="Description (e.g., Personal email, Work phone)"
-                />
-              </div>
-            )}
-          </Field.Root>
-        </div>
-
-        {/* Sticky footer */}
-        <div className="border-t border-gray-200 bg-gray-100 p-4 space-y-3">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Message
+              )}
+            </Field.Root>
           </label>
+
+          {(!contactMethods?.length || watch("contactMethodID") === 0) && (
+            <p className="text-sm text-gray-600 text-end">
+              Don't see the right contact method? Create one{" "}
+              <Link
+                to="/settings"
+                className="text-blue-500"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                here
+              </Link>
+              .
+            </p>
+          )}
           <Field.Root>
             <Field.Control
               render={
-                <Input {...register("body")} className="w-full" autoFocus />
+                <Input
+                  {...register("body")}
+                  className="w-full"
+                  placeholder="Reason for reminder"
+                />
               }
             />
           </Field.Root>

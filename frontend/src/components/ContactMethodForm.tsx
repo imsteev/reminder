@@ -31,6 +31,7 @@ export default function ContactMethodForm({ onSuccess, onCancel }: Props) {
         description: "",
       });
       onSuccess();
+      onCancel();
     },
     onError: (error) => {
       toast.error("Failed to create contact method", {

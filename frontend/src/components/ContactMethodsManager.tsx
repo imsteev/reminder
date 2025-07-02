@@ -77,57 +77,53 @@ export default function ContactMethodsManager({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Contact Methods
-          </h2>
-          <Button
-            variant="outline"
-            onClick={() => setShowAddForm(true)}
-            size="sm"
-          >
-            + Contact Method
-          </Button>
-        </div>
-
-        {showAddForm && (
-          <ContactMethodForm
-            onCancel={() => setShowAddForm(false)}
-            onSuccess={() => refetch()}
-          />
-        )}
-
-        <div className="space-y-3">
-          {contactMethods?.map((method) => (
-            <ContactMethodCard
-              key={method.id}
-              method={method}
-              isEditing={editingId === method.id}
-              onEdit={() => setEditingId(method.id)}
-              onSave={(updatedMethod) =>
-                updateMutation.mutate({
-                  id: method.id,
-                  data: updatedMethod,
-                })
-              }
-              onCancel={() => setEditingId(null)}
-              onDelete={() => handleDelete(method.id)}
-              isUpdating={updateMutation.isPending}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))}
-        </div>
-
-        {!contactMethods?.length && (
-          <div className="text-center py-8 text-gray-500">
-            <p className="text-sm">
-              Add your first contact method to start receiving reminders.
-            </p>
-          </div>
-        )}
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-medium">Contact Methods</h3>
+        <Button
+          variant="outline"
+          onClick={() => setShowAddForm(true)}
+          size="sm"
+        >
+          + Contact Method
+        </Button>
       </div>
+
+      {showAddForm && (
+        <ContactMethodForm
+          onCancel={() => setShowAddForm(false)}
+          onSuccess={() => refetch()}
+        />
+      )}
+
+      <div className="space-y-3">
+        {contactMethods?.map((method) => (
+          <ContactMethodCard
+            key={method.id}
+            method={method}
+            isEditing={editingId === method.id}
+            onEdit={() => setEditingId(method.id)}
+            onSave={(updatedMethod) =>
+              updateMutation.mutate({
+                id: method.id,
+                data: updatedMethod,
+              })
+            }
+            onCancel={() => setEditingId(null)}
+            onDelete={() => handleDelete(method.id)}
+            isUpdating={updateMutation.isPending}
+            isDeleting={deleteMutation.isPending}
+          />
+        ))}
+      </div>
+
+      {!contactMethods?.length && (
+        <div className="text-center py-8 text-gray-500">
+          <p className="text-sm">
+            Add your first contact method to start receiving reminders.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

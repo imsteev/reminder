@@ -19,8 +19,8 @@ export default function RemindersContainer() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      <h3 className="text-xl font-bold">Reminders</h3>
+    <div className="container mx-auto px-4 py-8 space-y-4">
+      <h3 className="text-xl font-medium">Reminders</h3>
       <ReminderList
         reminders={reminders || []}
         isLoading={isLoading}

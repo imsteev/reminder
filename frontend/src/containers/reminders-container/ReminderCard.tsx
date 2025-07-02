@@ -80,7 +80,6 @@ export default function ReminderCard({
                 size="sm"
                 onClick={() => onEdit?.(reminder)}
                 disabled={isDeleting}
-                className="text-blue-600 hover:text-blue-800"
               >
                 Edit
               </Button>

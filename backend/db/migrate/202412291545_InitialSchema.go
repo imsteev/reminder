@@ -59,12 +59,6 @@ func Up202412291545(tx *gorm.DB) error {
 	contactMethods := []models.ContactMethod{
 		{
 			UserID:      1,
-			Type:        "phone",
-			Value:       "9084323855",
-			Description: "Primary phone",
-		},
-		{
-			UserID:      1,
 			Type:        "email",
 			Value:       "spchung95@gmail.com",
 			Description: "Primary email",

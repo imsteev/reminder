@@ -1,4 +1,5 @@
 # Reminder App Development Commands
+set dotenv-load
 
 # Default recipe - show available commands
 default:

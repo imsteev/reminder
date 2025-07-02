@@ -2,7 +2,6 @@ package workers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reminder-app/lib/mail"
 	"reminder-app/models"
@@ -41,14 +40,18 @@ func (w *ReminderJobWorker) Work(ctx context.Context, job *river.Job[ReminderJob
 		return fmt.Errorf("failed to get contact method: %w", err)
 	}
 
-	marshaledReminder, err := json.Marshal(reminder)
-	if err != nil {
-		return fmt.Errorf("failed to marshal reminder: %w", err)
-	}
+	body := fmt.Sprintf(`
+	<html>
+		<body>
+			<h1>Reminder</h1>
+			<p>%s</p>
+		</body>
+	</html>
+	`, reminder.Body)
 
 	switch contactMethod.Type {
 	case "email":
-		return w.EmailSender.Send(contactMethod.Value, "Reminder", string(marshaledReminder))
+		return w.EmailSender.Send(contactMethod.Value, "Reminder", body)
 	case "phone":
 		fmt.Println("Phone number:", contactMethod.Value)
 	}

@@ -7,6 +7,9 @@ import (
 	"reminder-app/controller/remindercontroller"
 	"strconv"
 
+	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
+
+	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -37,6 +40,7 @@ func New(p Params) *Handler {
 }
 
 func (h *Handler) init() *Handler {
+	clerk.SetKey("sk_test_LnQRf8v9rlcTLzegHKMbuTytkzgFTzumFmLOE2ckei")
 	h.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -51,6 +55,9 @@ func (h *Handler) init() *Handler {
 	})
 
 	grp := h.Group("/api")
+
+	grp.Use(clerkAuthMiddleware())
+
 	grp.GET("/reminders", h.handleGetReminders)
 	grp.POST("/reminders", h.handleCreateReminder)
 	grp.PUT("/reminders/:id", h.handleUpdateReminder)
@@ -62,6 +69,36 @@ func (h *Handler) init() *Handler {
 	grp.DELETE("/contact-methods/:id", h.handleDeleteContactMethod)
 
 	return h
+}
+
+func clerkAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "authorization header required"})
+			c.Abort()
+			return
+		}
+
+		// Wrap the request/response for clerk validation
+		wrappedHandler := clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			claims, ok := clerk.SessionClaimsFromContext(r.Context())
+			if !ok {
+				c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "invalid or expired token"})
+				c.Abort()
+				return
+			}
+
+			c.Set("userID", claims.Subject)
+		}))
+
+		wrappedHandler.ServeHTTP(c.Writer, c.Request)
+
+		// Only continue if auth was successful (userID was set)
+		if _, exists := c.Get("userID"); exists {
+			c.Next()
+		}
+	}
 }
 
 func (h *Handler) handleGetReminders(c *gin.Context) {

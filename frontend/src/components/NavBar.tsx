@@ -4,6 +4,7 @@ import { Button, Dialog, DialogBody, DialogHeader, DialogTitle } from "./ui";
 import ReminderForm from "../containers/reminders-container/ReminderForm";
 import { CurrentTimeContext } from "../contexts/CurrentTimeContext";
 import NowMarker from "../containers/reminders-container/timeline/NowMarker";
+import { UserButton } from "./ClerkSignedInComponent";
 
 interface Props {
   refetchReminders: () => void;
@@ -100,11 +101,7 @@ export default function NavBar({ refetchReminders }: Props) {
             </Button>
 
             {/* User Profile */}
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium text-sm">
-                U
-              </div>
-            </div>
+            <UserButton />
           </div>
         </div>
       </div>

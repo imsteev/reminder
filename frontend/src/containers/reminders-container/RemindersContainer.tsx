@@ -5,6 +5,38 @@ import ReminderList from "./ReminderList";
 import { DEFAULT_USER_ID } from "../../constants";
 import NowMarker from "./timeline/NowMarker";
 
+import { UseQueryOptions } from "@tanstack/react-query";
+import { useAuth } from "@clerk/clerk-react";
+
+function useAuthenticatedQuery<T>(
+  queryKey: any[],
+  options?: Omit<UseQueryOptions<T>, "queryKey" | "queryFn">
+) {
+  const auth = useAuth();
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      const token = await auth.getToken();
+      const response = await fetch(url, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      return response.json();
+    },
+    ...options,
+  });
+}
+
+// Usage
+const { data } = useAuthenticatedQuery(["users"], "/api/users");
+
 export default function RemindersContainer() {
   const [includePast, setIncludePast] = useState(false);
 

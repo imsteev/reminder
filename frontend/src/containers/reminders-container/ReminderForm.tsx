@@ -169,9 +169,9 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
           <div>
             <Field.Root>
-              <Field.Label className="flex items-center justify-between pr-1 mb-2">
+              <Field.Label className="flex items-center justify-between mb-2 cursor-pointer">
                 {UI_TEXT.START_TIME_LABEL}
-                <div className="text-xs text-gray-500 flex items-center">
+                <div className="text-xs text-gray-500 flex items-center cursor-pointer">
                   Repeating
                   <input
                     type="checkbox"
@@ -181,7 +181,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                         ? setValue("reminderType", "one-time")
                         : setValue("reminderType", "repeating")
                     }
-                    className="ml-2 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 mr-2"
+                    className="ml-2 w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                   />
                 </div>
               </Field.Label>
@@ -213,7 +213,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                   onClick={() => setStartTimeIn(TIME_PRESETS.FIFTEEN_MINUTES)}
                   className="rounded-full flex-1"
                 >
-                  In 15 min
+                  15m
                 </Button>
                 <Button
                   type="button"
@@ -222,7 +222,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                   onClick={() => setStartTimeIn(TIME_PRESETS.ONE_HOUR)}
                   className="rounded-full flex-1"
                 >
-                  In 1 hour
+                  1h
                 </Button>
                 <Button
                   type="button"
@@ -236,7 +236,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                   }
                   className="rounded-full flex-1"
                 >
-                  Tomorrow
+                  Tmr 9am
                 </Button>
               </div>
             </div>
@@ -315,8 +315,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         {/* Sticky footer */}
         <div className="border-t border-gray-200 bg-gray-100 p-4 space-y-3 rounded-b-lg">
           <label className="flex  justify-between items-center text-sm font-medium text-gray-700 rounded-lg">
-            <span>Deliver to</span>
-            <Field.Root className="bg-white">
+            <span>Contact method</span>
+            <Field.Root>
               {!!contactMethods?.length && (
                 <div className="space-y-3">
                   <div>
@@ -326,7 +326,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                           valueAsNumber: true,
                         })}
                         value={watch("contactMethodID")}
-                        className="text-sm w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="bg-white text-sm w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="0">Select a contact method</option>
                         {contactMethods?.map((method) => (
@@ -413,7 +413,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
                 <Textarea
                   {...register("body")}
                   className="w-full"
-                  placeholder="Reason for reminder"
+                  placeholder="Message"
                   rows={3}
                 />
               }

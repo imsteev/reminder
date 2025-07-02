@@ -114,7 +114,7 @@ const ReminderList: React.FC<Props> = ({
         currentTime={currentTime}
         onDelete={(id) => deleteMutation.mutate(id)}
         isDeleting={deleteMutation.isPending}
-        onCreateSuccess={refetch}
+        onSuccess={refetch}
       />
     </div>
   );

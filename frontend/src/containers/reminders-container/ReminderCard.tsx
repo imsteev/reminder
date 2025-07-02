@@ -7,25 +7,22 @@ import { cn } from "../../utils/cn";
 interface ReminderCardProps {
   reminder: Reminder;
   reminderTime: Date;
-  timelineInfo: { distance: string };
   isUpcoming: boolean;
   onDelete: (id: number) => void;
-  onReschedule?: (reminder: Reminder) => void;
+  onEdit?: (reminder: Reminder) => void;
   isDeleting: boolean;
 }
 
 export default function ReminderCard({
   reminder,
   reminderTime,
-  timelineInfo,
   isUpcoming,
   onDelete,
-  onReschedule,
+  onEdit,
   isDeleting,
 }: ReminderCardProps) {
   return (
     <Card
-      variant={isUpcoming ? "default" : "filled"}
       className={cn(
         "flex-1",
         isUpcoming && reminder.is_repeating && "border-blue-200",
@@ -33,14 +30,13 @@ export default function ReminderCard({
       )}
     >
       <CardContent>
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs text-gray-500">#{reminder.id}</span>
               <p className={cn("font-medium")}>
                 {reminder.body?.slice(0, 30) +
-                    (reminder.body?.length > 30 ? "..." : "") ||
-                  "-"}
+                  (reminder.body?.length > 30 ? "..." : "") || "-"}
               </p>
               {reminder.is_repeating && (
                 <span
@@ -61,7 +57,6 @@ export default function ReminderCard({
                   isUpcoming ? "text-gray-700" : "text-gray-500"
                 }`}
               >
-                <span className="font-medium">{timelineInfo.distance}</span>
                 {reminder.is_repeating && (
                   <span className="text-xs text-blue-600">
                     • Next occurrence
@@ -79,15 +74,15 @@ export default function ReminderCard({
           </div>
 
           <div className="flex items-center gap-2 ml-4">
-            {!isUpcoming && !reminder.is_repeating && onReschedule && (
+            {!reminder.is_repeating && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => onReschedule(reminder)}
+                onClick={() => onEdit?.(reminder)}
                 disabled={isDeleting}
                 className="text-blue-600 hover:text-blue-800"
               >
-                🔄
+                Edit
               </Button>
             )}
             <Button
@@ -97,7 +92,7 @@ export default function ReminderCard({
               disabled={isDeleting}
               className="text-red-600 hover:text-red-800"
             >
-              🗑️
+              Delete
             </Button>
           </div>
         </div>

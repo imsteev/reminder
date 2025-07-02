@@ -5,7 +5,7 @@ import ReminderList from "./ReminderList";
 import { DEFAULT_USER_ID } from "../../constants";
 
 export default function RemindersContainer() {
-  const [includePast, setIncludePast] = useState(false);
+  const [includePast] = useState(true);
 
   const {
     data: reminders,
@@ -20,23 +20,7 @@ export default function RemindersContainer() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <label
-            htmlFor="include-past"
-            className="text-sm font-medium text-gray-700"
-          >
-            Show past reminders
-          </label>
-          <input
-            id="include-past"
-            type="checkbox"
-            checked={includePast}
-            onChange={(e) => setIncludePast(e.target.checked)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-        </div>
-      </div>
+      <h3 className="text-xl font-bold">Reminders</h3>
       <ReminderList
         reminders={reminders || []}
         isLoading={isLoading}

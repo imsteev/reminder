@@ -101,7 +101,13 @@ export default function NavBar({ refetchReminders }: Props) {
             </Button>
 
             {/* User Profile */}
-            <UserButton />
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-8 h-8",
+                },
+              }}
+            />
           </div>
         </div>
       </div>

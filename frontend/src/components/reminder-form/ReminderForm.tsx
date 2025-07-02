@@ -7,6 +7,9 @@ import {
   createReminder,
   getContactMethods,
   createContactMethod,
+  updateReminder,
+  Reminder,
+  UpdateReminderRequest,
 } from "../../api/reminders";
 import {
   getCurrentDateTimeString,
@@ -27,7 +30,7 @@ import { Link } from "react-router-dom";
 interface ReminderFormData {
   body?: string;
   contactMethodID?: number;
-  reminderType?: "one-time" | "repeating";
+  isRepeating?: boolean;
   intervalDays?: number;
   intervalHours?: number;
   intervalMinutes?: number;
@@ -38,11 +41,13 @@ interface ReminderFormData {
 }
 
 interface ReminderFormProps {
+  reminderID?: number;
   onSuccess?: () => void;
   initialData?: Partial<ReminderFormData>;
 }
 
 const ReminderForm: React.FC<ReminderFormProps> = ({
+  reminderID,
   onSuccess,
   initialData,
 }) => {
@@ -56,7 +61,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   } = useForm<ReminderFormData>({
     defaultValues: {
       body: initialData?.body || "",
-      reminderType: initialData?.reminderType || "one-time",
+      isRepeating: initialData?.isRepeating || false,
       contactMethodID: initialData?.contactMethodID || 0,
       intervalDays: initialData?.intervalDays || 0,
       intervalHours: initialData?.intervalHours || 1,
@@ -66,7 +71,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     },
   });
 
-  const reminderType = watch("reminderType");
+  const isRepeating = watch("isRepeating");
   const newContactMethodType = watch("newContactMethodType");
 
   const { data: contactMethods = [] } = useQuery({
@@ -94,6 +99,21 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (updateRequest: UpdateReminderRequest) =>
+      updateReminder(reminderID!, updateRequest),
+    onSuccess: () => {
+      reset();
+      toast.success("Reminder updated");
+      onSuccess?.();
+    },
+    onError: (error) => {
+      toast.error("Failed to update reminder", {
+        description: error.message,
+      });
+    },
+  });
+
   const setStartTimeToNow = () => {
     setValue("startTime", getCurrentDateTimeString());
   };
@@ -107,10 +127,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   };
 
   const onSubmit = async (data: ReminderFormData) => {
-    const isOneTime = data.reminderType === "one-time";
-
     let periodMinutes = 0;
-    if (!isOneTime) {
+    if (data.isRepeating) {
       const days = data.intervalDays || 0;
       const hours = data.intervalHours || 0;
       const minutes = data.intervalMinutes || 0;
@@ -123,11 +141,22 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
       return;
     }
 
+    if (reminderID) {
+      return updateMutation.mutate({
+        user_id: DEFAULT_USER_ID,
+        body: data.body || "",
+        start_time: new Date(data.startTime!).toISOString(),
+        is_repeating: data.isRepeating || false,
+        period_minutes: periodMinutes,
+        contact_method_id: contactMethodId,
+      });
+    }
+
     createMutation.mutate({
       user_id: DEFAULT_USER_ID,
       body: data.body || "",
       start_time: new Date(data.startTime!).toISOString(),
-      is_repeating: data.reminderType === "repeating",
+      is_repeating: data.isRepeating || false,
       period_minutes: periodMinutes,
       contact_method_id: contactMethodId,
     });
@@ -140,8 +169,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
         <div className="flex-1 overflow-y-auto space-y-4 p-4">
           <div>
             <ReminderTypeSelector
-              value={reminderType || "one-time"}
-              onChange={(value) => setValue("reminderType", value)}
+              value={isRepeating || false}
+              onChange={(value) => setValue("isRepeating", value)}
             />
             <Field.Root>
               <Field.Control
@@ -199,7 +228,7 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
             </div>
           </div>
 
-          {reminderType === "repeating" && (
+          {isRepeating && (
             <div className="space-y-4">
               <label className="text-start block text-sm font-medium text-gray-700 mb-2">
                 Repeats every
@@ -377,13 +406,20 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
             type="submit"
             disabled={
               createMutation.isPending ||
+              updateMutation.isPending ||
               !watch("body") ||
               !watch("startTime") ||
               !watch("contactMethodID")
             }
             className="w-full"
           >
-            {createMutation.isPending ? "Creating..." : "Create Reminder"}
+            {reminderID
+              ? updateMutation.isPending
+                ? "Saving..."
+                : "Save"
+              : createMutation.isPending
+              ? "Creating..."
+              : "Create Reminder"}
           </Button>
         </div>
       </form>

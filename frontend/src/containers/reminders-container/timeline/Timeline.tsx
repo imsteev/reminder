@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { type Reminder } from "../../../api/reminders";
 import ReminderCard from "../ReminderCard";
-import { getNextOccurrence, getTimelinePosition } from "./utils";
+import { getNextOccurrence } from "./utils";
 import {
   Dialog,
   DialogHeader,
@@ -9,13 +9,16 @@ import {
   DialogBody,
 } from "../../../components/ui";
 import { ReminderForm } from "../../../components/reminder-form";
-import { getCurrentDateTimeString } from "../../../utils/datetime";
+import {
+  getCurrentDateTimeString,
+  toLocalDateTimeString,
+} from "../../../utils/datetime";
 
 interface Props {
   reminders: Reminder[];
   currentTime: Date;
   onDelete: (id: number) => void;
-  onCreateSuccess: () => void;
+  onSuccess: () => void;
   isDeleting: boolean;
 }
 
@@ -23,14 +26,14 @@ export default function Timeline({
   reminders,
   currentTime,
   onDelete,
-  onCreateSuccess,
+  onSuccess,
   isDeleting,
 }: Props) {
   const [showForm, setShowForm] = useState(false);
-  const [rescheduleData, setRescheduleData] = useState<Reminder | null>(null);
+  const [editData, setEditData] = useState<Reminder | null>(null);
 
-  const handleReschedule = (reminder: Reminder) => {
-    setRescheduleData(reminder);
+  const handleEdit = (reminder: Reminder) => {
+    setEditData(reminder);
     setShowForm(true);
   };
 
@@ -42,15 +45,12 @@ export default function Timeline({
 
     return {
       body: reminder.body || "",
-      reminderType: reminder.is_repeating
-        ? ("repeating" as const)
-        : ("one-time" as const),
+      isRepeating: reminder.is_repeating,
       contactMethodID: reminder.contact_method_id,
       intervalDays: days,
       intervalHours: hours,
       intervalMinutes: minutes,
-      startTime: getCurrentDateTimeString(), // Set to now for reschedule
-      createNewContactMethod: false,
+      startTime: toLocalDateTimeString(new Date(reminder.start_time)),
     };
   };
   return (
@@ -58,17 +58,15 @@ export default function Timeline({
       <div className="space-y-6">
         {reminders.map((reminder) => {
           const reminderTime = getNextOccurrence(reminder, currentTime);
-          const timelineInfo = getTimelinePosition(reminderTime, currentTime);
           const isUpcoming = reminderTime > currentTime;
           return (
             <div key={reminder.id} className="flex items-center gap-2">
               <ReminderCard
                 reminder={reminder}
                 reminderTime={reminderTime}
-                timelineInfo={timelineInfo}
                 isUpcoming={isUpcoming}
                 onDelete={onDelete}
-                onReschedule={handleReschedule}
+                onEdit={handleEdit}
                 isDeleting={isDeleting}
               />
             </div>
@@ -80,25 +78,24 @@ export default function Timeline({
           isOpen={showForm}
           onClose={() => {
             setShowForm(false);
-            setRescheduleData(null);
+            setEditData(null);
           }}
         >
           <DialogHeader>
             <DialogTitle>
-              {rescheduleData ? "Reschedule Reminder" : "Create New Reminder"}
+              {editData ? "Edit Reminder" : "Create New Reminder"}
             </DialogTitle>
           </DialogHeader>
           <DialogBody>
             <ReminderForm
+              reminderID={editData?.id}
               initialData={
-                rescheduleData
-                  ? convertReminderToFormData(rescheduleData)
-                  : undefined
+                editData ? convertReminderToFormData(editData) : undefined
               }
               onSuccess={() => {
-                onCreateSuccess();
+                onSuccess();
                 setShowForm(false);
-                setRescheduleData(null);
+                setEditData(null);
               }}
             />
           </DialogBody>

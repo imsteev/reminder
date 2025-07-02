@@ -28,18 +28,3 @@ export const getNextOccurrence = (reminder: Reminder, currentTime: Date) => {
 
   return nextOccurrence;
 };
-
-export const getTimelinePosition = (reminderTime: Date, currentTime: Date) => {
-  const minutesToReminder = differenceInMinutes(reminderTime, currentTime);
-  const isPast = isBefore(reminderTime, currentTime);
-
-  if (isPast) return { position: -1, distance: "Past" };
-  if (minutesToReminder === 0) return { position: 0, distance: "Now" };
-  if (minutesToReminder <= 30)
-    return { position: 1, distance: formatDistanceToNow(reminderTime) };
-  if (minutesToReminder <= 180)
-    return { position: 2, distance: formatDistanceToNow(reminderTime) };
-  if (minutesToReminder <= 1440)
-    return { position: 3, distance: formatDistanceToNow(reminderTime) };
-  return { position: 4, distance: formatDistanceToNow(reminderTime) };
-};

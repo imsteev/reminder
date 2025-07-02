@@ -58,7 +58,7 @@ export default function NavBar({ refetchReminders }: Props) {
               <span className="text-xl">⏰</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">RemindMe</h1>
+              <h1 className="text-xl font-bold text-gray-900">Uchi</h1>
               <NowMarker />
             </div>
           </div>

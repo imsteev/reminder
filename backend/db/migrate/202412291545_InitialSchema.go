@@ -47,7 +47,8 @@ func Up202412291545(tx *gorm.DB) error {
 		BaseModel: models.BaseModel{
 			ID: 1,
 		},
-		Name: "Stephen Chung",
+		Name:    "Stephen Chung",
+		ClerkID: "user_2vJdLwhivmM8WJFmu0uxozMv7M6",
 	}
 
 	// Use FirstOrCreate to avoid duplicates if migration is run multiple times

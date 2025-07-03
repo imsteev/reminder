@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"reminder-app/config"
 	"reminder-app/controller/clerkcontroller"
@@ -163,6 +164,7 @@ func (h *Handler) handleGetContactMethods(c *gin.Context) {
 		return
 	}
 
+	fmt.Println("clerkID: ", clerkID)
 	contactMethods, err := h.contactMethodController.GetContactMethods(clerkID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})

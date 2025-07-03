@@ -18,6 +18,7 @@ type ClerkConfig struct {
 }
 
 type Config struct {
+	Env         string `env:"ENV"`
 	DatabaseURL string `env:"DATABASE_URL"`
 	Port        string `env:"PORT,default=8080"`
 	Resend      ResendConfig
@@ -31,3 +32,6 @@ func New() *Config {
 	}
 	return &cfg
 }
+
+func (c *Config) IsProd() bool { return c.Env == "prod" }
+func (c *Config) IsDev() bool  { return c.Env == "dev" }

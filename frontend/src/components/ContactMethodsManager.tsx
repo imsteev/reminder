@@ -28,7 +28,7 @@ export default function ContactMethodsManager({
     refetch,
   } = useQuery({
     queryKey: ["contactMethods", userId],
-    queryFn: () => getContactMethods({ user_id: userId }),
+    queryFn: () => getContactMethods(),
   });
 
   const updateMutation = useMutation({

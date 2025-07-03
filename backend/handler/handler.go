@@ -77,7 +77,13 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 		return
 	}
 
-	reminders, err := h.reminderController.GetReminders(query.UserID, query.IncludePast)
+	clerkID, exists := c.Get("clerkID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
+		return
+	}
+
+	reminders, err := h.reminderController.GetReminders(clerkID.(string), query.IncludePast)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -87,13 +93,21 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateReminder(c *gin.Context) {
+	// todo: validate that the contact method belongs to the user
+
 	var reminder protocol.CreateReminderRequest
 	if err := c.ShouldBindJSON(&reminder); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	savedReminder, err := h.reminderController.CreateReminder(&reminder)
+	clerkID, exists := c.Get("clerkID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
+		return
+	}
+
+	savedReminder, err := h.reminderController.CreateReminder(clerkID.(string), &reminder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -103,6 +117,8 @@ func (h *Handler) handleCreateReminder(c *gin.Context) {
 }
 
 func (h *Handler) handleUpdateReminder(c *gin.Context) {
+	// todo: validate that the reminder belongs to the user
+
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -126,6 +142,8 @@ func (h *Handler) handleUpdateReminder(c *gin.Context) {
 }
 
 func (h *Handler) handleDeleteReminder(c *gin.Context) {
+	// todo: validate that the reminder belongs to the user
+
 	idStr := c.Param("id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
@@ -142,13 +160,13 @@ func (h *Handler) handleDeleteReminder(c *gin.Context) {
 }
 
 func (h *Handler) handleGetContactMethods(c *gin.Context) {
-	var query protocol.GetContactMethodsQuery
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
+	clerkID, exists := c.Get("clerkID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
 		return
 	}
 
-	contactMethods, err := h.contactMethodController.GetContactMethods(query.UserID)
+	contactMethods, err := h.contactMethodController.GetContactMethods(clerkID.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -158,13 +176,19 @@ func (h *Handler) handleGetContactMethods(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateContactMethod(c *gin.Context) {
+	clerkID, exists := c.Get("clerkID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
+		return
+	}
+
 	var contactMethod protocol.CreateContactMethodRequest
 	if err := c.ShouldBindJSON(&contactMethod); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.ErrorResponse{Error: err.Error()})
 		return
 	}
 
-	savedContactMethod, err := h.contactMethodController.CreateContactMethod(&contactMethod)
+	savedContactMethod, err := h.contactMethodController.CreateContactMethod(clerkID.(string), &contactMethod)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return

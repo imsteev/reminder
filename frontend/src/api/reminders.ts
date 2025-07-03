@@ -9,14 +9,13 @@ import type {
   DeleteResponse,
   ErrorResponse,
   GetRemindersQuery,
-  GetContactMethodsQuery,
 } from "../types/protocol";
 
 export const getReminders = async (
   query: GetRemindersQuery
 ): Promise<Reminder[] | null> => {
   const response = await axios.get(
-    `/reminders?user_id=${query.user_id}&include_past=${query.include_past}`
+    `/reminders?include_past=${query.include_past}`
   );
   return response.data;
 };
@@ -41,10 +40,8 @@ export const deleteReminder = async (id: number): Promise<DeleteResponse> => {
   return response.data;
 };
 
-export const getContactMethods = async (
-  query: GetContactMethodsQuery
-): Promise<ContactMethod[] | null> => {
-  const response = await axios.get(`/contact-methods?user_id=${query.user_id}`);
+export const getContactMethods = async (): Promise<ContactMethod[] | null> => {
+  const response = await axios.get(`/contact-methods`);
   return response.data;
 };
 
@@ -81,5 +78,4 @@ export type {
   DeleteResponse,
   ErrorResponse,
   GetRemindersQuery,
-  GetContactMethodsQuery,
 };

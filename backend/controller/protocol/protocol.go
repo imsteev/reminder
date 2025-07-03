@@ -3,7 +3,6 @@ package protocol
 import "time"
 
 type CreateReminderRequest struct {
-	UserID          int64     `json:"user_id"`
 	Body            string    `json:"body"`
 	StartTime       time.Time `json:"start_time"`
 	IsRepeating     bool      `json:"is_repeating"`
@@ -66,10 +65,5 @@ type ErrorResponse struct {
 }
 
 type GetRemindersQuery struct {
-	UserID      int64 `json:"user_id" form:"user_id" binding:"required"`
-	IncludePast bool  `json:"include_past" form:"include_past"`
-}
-
-type GetContactMethodsQuery struct {
-	UserID int64 `json:"user_id" form:"user_id" binding:"required"`
+	IncludePast bool `json:"include_past" form:"include_past"`
 }

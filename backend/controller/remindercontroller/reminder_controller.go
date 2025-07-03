@@ -32,9 +32,14 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB, riverClient: p.River}
 }
 
-func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.Reminder, error) {
+func (rc *Controller) GetReminders(clerkID string, includePast bool) ([]protocol.Reminder, error) {
+	var user models.User
+	if err := rc.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
 	var dbReminders []models.Reminder
-	query := rc.db.Where("user_id = ?", userID)
+	query := rc.db.Where("user_id = ?", user.ID)
 
 	if !includePast {
 		// For one-time reminders, exclude past ones. For repeating, always include
@@ -61,16 +66,20 @@ func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.R
 	return protocolReminders, err
 }
 
-func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (*protocol.Reminder, error) {
+func (rc *Controller) CreateReminder(clerkID string, reminder *protocol.CreateReminderRequest) (*protocol.Reminder, error) {
+	var user models.User
+	if err := rc.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
+		return nil, err
+	}
 
 	var contactMethod models.ContactMethod
-	err := rc.db.Where("user_id = ? and id = ?", reminder.UserID, reminder.ContactMethodID).First(&contactMethod).Error
+	err := rc.db.Where("user_id = ? and id = ?", user.ID, reminder.ContactMethodID).First(&contactMethod).Error
 	if err != nil {
 		return nil, errors.New("contact method not found")
 	}
 
 	dbReminder := &models.Reminder{
-		UserID:          reminder.UserID,
+		UserID:          int64(user.ID),
 		Body:            reminder.Body,
 		StartTime:       reminder.StartTime,
 		IsRepeating:     reminder.IsRepeating,
@@ -129,7 +138,6 @@ func (rc *Controller) CreateReminder(reminder *protocol.CreateReminderRequest) (
 
 	return &protocol.Reminder{
 		ID:              int64(dbReminder.ID),
-		UserID:          dbReminder.UserID,
 		Body:            dbReminder.Body,
 		StartTime:       dbReminder.StartTime,
 		IsRepeating:     dbReminder.IsRepeating,

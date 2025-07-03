@@ -22,9 +22,14 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB}
 }
 
-func (cc *Controller) GetContactMethods(userID int64) ([]protocol.ContactMethod, error) {
+func (ctrl *Controller) GetContactMethods(clerkID string) ([]protocol.ContactMethod, error) {
+	var user models.User
+	if err := ctrl.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
 	var dbContactMethods []models.ContactMethod
-	err := cc.db.Where("user_id = ?", userID).Find(&dbContactMethods).Error
+	err := ctrl.db.Where("user_id = ?", user.ID).Find(&dbContactMethods).Error
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +47,20 @@ func (cc *Controller) GetContactMethods(userID int64) ([]protocol.ContactMethod,
 	return protocolContactMethods, nil
 }
 
-func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactMethodRequest) (*protocol.ContactMethod, error) {
+func (ctrl *Controller) CreateContactMethod(clerkID string, contactMethod *protocol.CreateContactMethodRequest) (*protocol.ContactMethod, error) {
+	var user models.User
+	if err := ctrl.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
 	dbContactMethod := &models.ContactMethod{
-		UserID:      contactMethod.UserID,
+		UserID:      int64(user.ID),
 		Type:        contactMethod.Type,
 		Value:       contactMethod.Value,
 		Description: contactMethod.Description,
 	}
 
-	err := cc.db.Create(dbContactMethod).Error
+	err := ctrl.db.Create(dbContactMethod).Error
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +74,11 @@ func (cc *Controller) CreateContactMethod(contactMethod *protocol.CreateContactM
 	}, nil
 }
 
-func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.UpdateContactMethodRequest) (*protocol.ContactMethod, error) {
+func (ctrl *Controller) UpdateContactMethod(id int64, contactMethod *protocol.UpdateContactMethodRequest) (*protocol.ContactMethod, error) {
+	// todo: validate that the contact method belongs to the user
+
 	var dbContactMethod models.ContactMethod
-	if err := cc.db.Where("id = ?", id).First(&dbContactMethod).Error; err != nil {
+	if err := ctrl.db.Where("id = ?", id).First(&dbContactMethod).Error; err != nil {
 		return nil, err
 	}
 
@@ -75,7 +87,7 @@ func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.Upda
 	dbContactMethod.Value = contactMethod.Value
 	dbContactMethod.Description = contactMethod.Description
 
-	err := cc.db.Save(&dbContactMethod).Error
+	err := ctrl.db.Save(&dbContactMethod).Error
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +101,9 @@ func (cc *Controller) UpdateContactMethod(id int64, contactMethod *protocol.Upda
 	}, nil
 }
 
-func (cc *Controller) DeleteContactMethod(id int64) error {
-	err := cc.db.Delete(&models.ContactMethod{}, id).Error
+func (ctrl *Controller) DeleteContactMethod(id int64) error {
+	// todo: validate that the contact method belongs to the user
+
+	err := ctrl.db.Delete(&models.ContactMethod{}, id).Error
 	return err
 }

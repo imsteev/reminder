@@ -33,7 +33,7 @@ func clerkAuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Wrap the request/response for clerk validation
+		// AI generated.... it works but I don't fully understand it. Come back to this to see if we can simplify it.
 		wrappedHandler := clerkhttp.WithHeaderAuthorization()(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			claims, ok := clerk.SessionClaimsFromContext(r.Context())
 			if !ok {
@@ -41,14 +41,12 @@ func clerkAuthMiddleware() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-
-			c.Set("userID", claims.Subject)
+			c.Set("clerkID", claims.Subject)
 		}))
 
 		wrappedHandler.ServeHTTP(c.Writer, c.Request)
 
-		// Only continue if auth was successful (userID was set)
-		if _, exists := c.Get("userID"); exists {
+		if _, exists := c.Get("clerkID"); exists {
 			c.Next()
 		}
 	}

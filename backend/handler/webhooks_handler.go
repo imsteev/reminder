@@ -11,6 +11,7 @@ import (
 	svix "github.com/svix/svix-webhooks/go"
 )
 
+// log any errors but always return 200 for webhooks.
 func (h *Handler) handleClerkWebhook(c *gin.Context) {
 	payload, err := h.verifyClerkWebhook(c)
 	if err != nil {
@@ -32,7 +33,6 @@ func (h *Handler) handleClerkWebhook(c *gin.Context) {
 		return
 	}
 
-	// always return 200 for webhooks
 	c.Status(http.StatusOK)
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"reminder-app/config"
 	"reminder-app/controller/clerkcontroller"
 	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/protocol"
@@ -20,6 +21,7 @@ import (
 
 type Handler struct {
 	*gin.Engine
+	config                  *config.Config
 	reminderController      *remindercontroller.Controller
 	contactMethodController *contactmethodcontroller.Controller
 	clerkController         *clerkcontroller.Controller
@@ -28,6 +30,7 @@ type Handler struct {
 type Params struct {
 	fx.In
 
+	Config                  *config.Config
 	ReminderController      *remindercontroller.Controller
 	ContactMethodController *contactmethodcontroller.Controller
 	ClerkController         *clerkcontroller.Controller
@@ -39,6 +42,7 @@ func New(p Params) *Handler {
 	api := gin.Default()
 	h := &Handler{
 		Engine:                  api,
+		config:                  p.Config,
 		reminderController:      p.ReminderController,
 		contactMethodController: p.ContactMethodController,
 		clerkController:         p.ClerkController,
@@ -47,7 +51,8 @@ func New(p Params) *Handler {
 }
 
 func (h *Handler) init() *Handler {
-	clerk.SetKey("sk_test_LnQRf8v9rlcTLzegHKMbuTytkzgFTzumFmLOE2ckei")
+	clerk.SetKey(h.config.Clerk.SecretKey)
+
 	h.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")

@@ -39,6 +39,23 @@ func (ctrl *Controller) HandleClerkEvent(eventType string, body []byte) error {
 
 func (ctrl *Controller) onUserCreated(event protocol.ClerkUserCreatedEvent) error {
 	var user models.User
-	user.ClerkID = event.Data.ID
-	return ctrl.db.Create(&user).Error
+
+	return ctrl.db.Transaction(func(tx *gorm.DB) error {
+		user.ClerkID = event.Data.ID
+		if err := tx.Create(&user).Error; err != nil {
+			return fmt.Errorf("error creating user: %w", err)
+		}
+
+		if len(event.Data.EmailAddresses) > 0 {
+			var contactMethod models.ContactMethod
+			contactMethod.Type = "email"
+			contactMethod.Value = event.Data.EmailAddresses[0].EmailAddress
+			contactMethod.UserID = int64(user.ID)
+			contactMethod.Description = "Account email"
+			if err := tx.Create(&contactMethod).Error; err != nil {
+				return fmt.Errorf("error creating contact method: %w", err)
+			}
+		}
+		return nil
+	})
 }

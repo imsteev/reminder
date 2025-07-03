@@ -1,3 +1,4 @@
+import React from "react";
 import ContactMethodsManager from "../../components/ContactMethodsManager";
 
 export default function SettingsContainer() {

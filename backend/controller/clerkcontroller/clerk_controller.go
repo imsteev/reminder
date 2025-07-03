@@ -24,11 +24,11 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB}
 }
 
-func (ctrl *Controller) HandleClerkEvent(eventType string, body []byte) error {
+func (ctrl *Controller) HandleClerkEvent(eventType string, payload []byte) error {
 	switch eventType {
 	case "user.created":
 		var event protocol.ClerkUserCreatedEvent
-		if err := json.Unmarshal(body, &event); err != nil {
+		if err := json.Unmarshal(payload, &event); err != nil {
 			return fmt.Errorf("error unmarshalling clerk webhook: %w", err)
 		}
 		return ctrl.onUserCreated(event)

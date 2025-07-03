@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"reminder-app/config"
 	"reminder-app/controller/clerkcontroller"
@@ -234,30 +231,4 @@ func (h *Handler) handleDeleteContactMethod(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, protocol.DeleteResponse{Message: "contact method deleted"})
-}
-
-func (h *Handler) handleClerkWebhook(c *gin.Context) {
-
-	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		fmt.Println("error reading clerk webhook body: ", err)
-		c.Status(http.StatusOK)
-		return
-	}
-
-	var eventType protocol.ClerkEvent
-	if err := json.Unmarshal(body, &eventType); err != nil {
-		fmt.Println("error parsing clerk webhook: ", err)
-		c.Status(http.StatusOK)
-		return
-	}
-
-	if err := h.clerkController.HandleClerkEvent(eventType.Type, body); err != nil {
-		fmt.Println("error handling clerk webhook: ", err)
-		c.Status(http.StatusOK)
-		return
-	}
-
-	// always return 200 for webhooks
-	c.Status(http.StatusOK)
 }

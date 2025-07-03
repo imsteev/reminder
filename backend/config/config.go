@@ -13,7 +13,8 @@ type ResendConfig struct {
 }
 
 type ClerkConfig struct {
-	SecretKey string `env:"CLERK_SECRET_KEY"`
+	SecretKey        string `env:"CLERK_SECRET_KEY"`
+	WebhookSecretKey string `env:"CLERK_WEBHOOK_SECRET_KEY"`
 }
 
 type Config struct {

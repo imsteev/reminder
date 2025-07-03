@@ -22,14 +22,9 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB}
 }
 
-func (ctrl *Controller) GetContactMethods(clerkID string) ([]protocol.ContactMethod, error) {
-	var user models.User
-	if err := ctrl.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
-		return nil, err
-	}
-
+func (ctrl *Controller) GetContactMethods(userID int64) ([]protocol.ContactMethod, error) {
 	var dbContactMethods []models.ContactMethod
-	err := ctrl.db.Where("user_id = ?", user.ID).Find(&dbContactMethods).Error
+	err := ctrl.db.Where("user_id = ?", userID).Find(&dbContactMethods).Error
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +42,9 @@ func (ctrl *Controller) GetContactMethods(clerkID string) ([]protocol.ContactMet
 	return protocolContactMethods, nil
 }
 
-func (ctrl *Controller) CreateContactMethod(clerkID string, contactMethod *protocol.CreateContactMethodRequest) (*protocol.ContactMethod, error) {
-	var user models.User
-	if err := ctrl.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
-		return nil, err
-	}
-
+func (ctrl *Controller) CreateContactMethod(userID int64, contactMethod *protocol.CreateContactMethodRequest) (*protocol.ContactMethod, error) {
 	dbContactMethod := &models.ContactMethod{
-		UserID:      int64(user.ID),
+		UserID:      userID,
 		Type:        contactMethod.Type,
 		Value:       contactMethod.Value,
 		Description: contactMethod.Description,

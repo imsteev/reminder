@@ -1,14 +1,28 @@
 package actor
 
+import "github.com/gin-gonic/gin"
+
 type Actor struct {
-	ID      string
+	UserID  uint
 	ClerkID string
 }
 
-func NewActor(id string, clerkID string) *Actor {
-	return &Actor{ID: id, ClerkID: clerkID}
+func New(id uint, clerkID string) *Actor {
+	return &Actor{UserID: id, ClerkID: clerkID}
 }
 
-func (a *Actor) GetID() string {
-	return a.ID
+func (a *Actor) GetUserIDInt64() int64 {
+	return int64(a.UserID)
+}
+
+func (a *Actor) GetClerkID() string {
+	return a.ClerkID
+}
+
+func FromGin(c *gin.Context) *Actor {
+	user, exists := c.Get("user")
+	if !exists {
+		return nil
+	}
+	return user.(*Actor)
 }

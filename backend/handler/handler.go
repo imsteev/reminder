@@ -1,22 +1,24 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"reminder-app/config"
 	"reminder-app/controller/clerkcontroller"
 	"reminder-app/controller/contactmethodcontroller"
 	"reminder-app/controller/protocol"
 	"reminder-app/controller/remindercontroller"
+	"reminder-app/lib/actor"
 	"strconv"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
 	*gin.Engine
+	db                      *gorm.DB
 	config                  *config.Config
 	reminderController      *remindercontroller.Controller
 	contactMethodController *contactmethodcontroller.Controller
@@ -27,6 +29,7 @@ type Params struct {
 	fx.In
 
 	Config                  *config.Config
+	DB                      *gorm.DB
 	ReminderController      *remindercontroller.Controller
 	ContactMethodController *contactmethodcontroller.Controller
 	ClerkController         *clerkcontroller.Controller
@@ -38,6 +41,7 @@ func New(p Params) *Handler {
 	api := gin.Default()
 	h := &Handler{
 		Engine:                  api,
+		db:                      p.DB,
 		config:                  p.Config,
 		reminderController:      p.ReminderController,
 		contactMethodController: p.ContactMethodController,
@@ -53,6 +57,7 @@ func (h *Handler) init() *Handler {
 
 	api := h.Group("/api")
 	api.Use(clerkAuthMiddleware())
+	api.Use(injectActorMiddleware(h.db))
 	api.GET("/reminders", h.handleGetReminders)
 	api.POST("/reminders", h.handleCreateReminder)
 	api.PUT("/reminders/:id", h.handleUpdateReminder)
@@ -75,13 +80,9 @@ func (h *Handler) handleGetReminders(c *gin.Context) {
 		return
 	}
 
-	clerkID, exists := c.Get("clerkID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
-		return
-	}
+	actor := actor.FromGin(c)
 
-	reminders, err := h.reminderController.GetReminders(clerkID.(string), query.IncludePast)
+	reminders, err := h.reminderController.GetReminders(actor.GetUserIDInt64(), query.IncludePast)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -99,13 +100,9 @@ func (h *Handler) handleCreateReminder(c *gin.Context) {
 		return
 	}
 
-	clerkID, exists := c.Get("clerkID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
-		return
-	}
+	actor := actor.FromGin(c)
 
-	savedReminder, err := h.reminderController.CreateReminder(clerkID.(string), &reminder)
+	savedReminder, err := h.reminderController.CreateReminder(actor.GetUserIDInt64(), &reminder)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -158,14 +155,9 @@ func (h *Handler) handleDeleteReminder(c *gin.Context) {
 }
 
 func (h *Handler) handleGetContactMethods(c *gin.Context) {
-	clerkID, exists := c.Get("clerkID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
-		return
-	}
+	actor := actor.FromGin(c)
 
-	fmt.Println("clerkID: ", clerkID)
-	contactMethods, err := h.contactMethodController.GetContactMethods(clerkID.(string))
+	contactMethods, err := h.contactMethodController.GetContactMethods(actor.GetUserIDInt64())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return
@@ -175,11 +167,7 @@ func (h *Handler) handleGetContactMethods(c *gin.Context) {
 }
 
 func (h *Handler) handleCreateContactMethod(c *gin.Context) {
-	clerkID, exists := c.Get("clerkID")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
-		return
-	}
+	actor := actor.FromGin(c)
 
 	var contactMethod protocol.CreateContactMethodRequest
 	if err := c.ShouldBindJSON(&contactMethod); err != nil {
@@ -187,7 +175,7 @@ func (h *Handler) handleCreateContactMethod(c *gin.Context) {
 		return
 	}
 
-	savedContactMethod, err := h.contactMethodController.CreateContactMethod(clerkID.(string), &contactMethod)
+	savedContactMethod, err := h.contactMethodController.CreateContactMethod(actor.GetUserIDInt64(), &contactMethod)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.ErrorResponse{Error: err.Error()})
 		return

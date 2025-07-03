@@ -3,10 +3,13 @@ package handler
 import (
 	"net/http"
 	"reminder-app/controller/protocol"
+	"reminder-app/lib/actor"
+	"reminder-app/models"
 
 	"github.com/clerk/clerk-sdk-go/v2"
 	clerkhttp "github.com/clerk/clerk-sdk-go/v2/http"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func httpOptionsMiddleware() gin.HandlerFunc {
@@ -49,5 +52,26 @@ func clerkAuthMiddleware() gin.HandlerFunc {
 		if _, exists := c.Get("clerkID"); exists {
 			c.Next()
 		}
+	}
+}
+
+func injectActorMiddleware(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		clerkID, exists := c.Get("clerkID")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		user := &models.User{}
+		if err := db.First(user, "clerk_id = ?", clerkID).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, protocol.ErrorResponse{Error: "unauthorized"})
+			c.Abort()
+			return
+		}
+
+		c.Set("user", actor.New(user.ID, user.ClerkID))
+		c.Next()
 	}
 }

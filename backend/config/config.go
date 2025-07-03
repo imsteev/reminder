@@ -18,7 +18,7 @@ type ClerkConfig struct {
 }
 
 type Config struct {
-	Env         string `env:"ENV"`
+	Env         string `env:"ENV,required"`
 	DatabaseURL string `env:"DATABASE_URL"`
 	Port        string `env:"PORT,default=8080"`
 	Resend      ResendConfig

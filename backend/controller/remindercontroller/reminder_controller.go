@@ -32,9 +32,9 @@ func New(p Params) *Controller {
 	return &Controller{db: p.DB, riverClient: p.River}
 }
 
-func (rc *Controller) GetReminders(clerkID string, includePast bool) ([]protocol.Reminder, error) {
+func (rc *Controller) GetReminders(userID int64, includePast bool) ([]protocol.Reminder, error) {
 	var user models.User
-	if err := rc.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
+	if err := rc.db.Where("id = ?", userID).First(&user).Error; err != nil {
 		return nil, err
 	}
 
@@ -66,20 +66,15 @@ func (rc *Controller) GetReminders(clerkID string, includePast bool) ([]protocol
 	return protocolReminders, err
 }
 
-func (rc *Controller) CreateReminder(clerkID string, reminder *protocol.CreateReminderRequest) (*protocol.Reminder, error) {
-	var user models.User
-	if err := rc.db.Where("clerk_id = ?", clerkID).First(&user).Error; err != nil {
-		return nil, err
-	}
-
+func (rc *Controller) CreateReminder(userID int64, reminder *protocol.CreateReminderRequest) (*protocol.Reminder, error) {
 	var contactMethod models.ContactMethod
-	err := rc.db.Where("user_id = ? and id = ?", user.ID, reminder.ContactMethodID).First(&contactMethod).Error
+	err := rc.db.Where("user_id = ? and id = ?", userID, reminder.ContactMethodID).First(&contactMethod).Error
 	if err != nil {
 		return nil, errors.New("contact method not found")
 	}
 
 	dbReminder := &models.Reminder{
-		UserID:          int64(user.ID),
+		UserID:          userID,
 		Body:            reminder.Body,
 		StartTime:       reminder.StartTime,
 		IsRepeating:     reminder.IsRepeating,

@@ -33,7 +33,6 @@ type ContactMethod struct {
 }
 
 type CreateContactMethodRequest struct {
-	UserID      int64  `json:"user_id"`
 	Type        string `json:"type"`
 	Value       string `json:"value"`
 	Description string `json:"description"`
@@ -46,7 +45,6 @@ type UpdateContactMethodRequest struct {
 }
 
 type UpdateReminderRequest struct {
-	UserID          int64     `json:"user_id"`
 	Body            string    `json:"body"`
 	StartTime       time.Time `json:"start_time"`
 	IsRepeating     bool      `json:"is_repeating"`

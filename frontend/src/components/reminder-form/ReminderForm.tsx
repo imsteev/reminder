@@ -75,8 +75,8 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
   const newContactMethodType = watch("newContactMethodType");
 
   const { data: contactMethods = [] } = useQuery({
-    queryKey: ["contactMethods", DEFAULT_USER_ID],
-    queryFn: () => getContactMethods({ user_id: DEFAULT_USER_ID }),
+    queryKey: ["contactMethods"],
+    queryFn: () => getContactMethods(),
   });
 
   useEffect(() => {
@@ -143,7 +143,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
 
     if (reminderID) {
       return updateMutation.mutate({
-        user_id: DEFAULT_USER_ID,
         body: data.body || "",
         start_time: new Date(data.startTime!).toISOString(),
         is_repeating: data.isRepeating || false,
@@ -153,7 +152,6 @@ const ReminderForm: React.FC<ReminderFormProps> = ({
     }
 
     createMutation.mutate({
-      user_id: DEFAULT_USER_ID,
       body: data.body || "",
       start_time: new Date(data.startTime!).toISOString(),
       is_repeating: data.isRepeating || false,

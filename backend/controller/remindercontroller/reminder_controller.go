@@ -153,7 +153,6 @@ func (rc *Controller) UpdateReminder(id int64, reminder *protocol.UpdateReminder
 	}
 
 	// Update fields from request
-	dbReminder.UserID = reminder.UserID
 	dbReminder.Body = reminder.Body
 	dbReminder.StartTime = reminder.StartTime
 	dbReminder.IsRepeating = reminder.IsRepeating

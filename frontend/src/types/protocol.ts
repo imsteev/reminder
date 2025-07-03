@@ -90,7 +90,6 @@ export interface ContactMethod {
   description: string;
 }
 export interface CreateContactMethodRequest {
-  user_id: number /* int64 */;
   type: string;
   value: string;
   description: string;
@@ -101,7 +100,6 @@ export interface UpdateContactMethodRequest {
   description: string;
 }
 export interface UpdateReminderRequest {
-  user_id: number /* int64 */;
   body: string;
   start_time: string;
   is_repeating: boolean;
